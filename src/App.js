@@ -1,4 +1,6 @@
+// App.js
 import React, { useEffect, useState } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import AppointmentForm from './components/AppointmentForm';
 import AppointmentList from './components/AppointmentList';
 import Register from './components/Register';
@@ -7,10 +9,9 @@ import { fetchAppointments } from './api/appointments';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [view, setView] = useState('login'); // 'login', 'register', or 'appointments'
   const [appointments, setAppointments] = useState([]);
+  const navigate = useNavigate();
 
-  // Fetch appointments when logged in
   useEffect(() => {
     if (user) {
       loadAppointments();
@@ -30,53 +31,60 @@ function App() {
     setAppointments((prev) => [...prev, newAppointment]);
   };
 
-  // ---------- UI Render ----------
-  if (!user) {
-    return (
-      <div className="App">
-        {view === 'register' ? (
-          <>
-            <h2>Register</h2>
-            <Register onSuccess={() => setView('login')} />
-            <p>
-              Already have an account?{' '}
-              <button onClick={() => setView('login')}>Login</button>
-            </p>
-          </>
-        ) : (
-          <>
-            <h2>Login</h2>
-            <Login
-              onLogin={(loggedInUser) => {
-                setUser(loggedInUser);
-                setView('appointments');
-              }}
-            />
-            <p>
-              New user?{' '}
-              <button onClick={() => setView('register')}>Register</button>
-            </p>
-          </>
-        )}
-      </div>
-    );
-  }
+  const handleLogout = () => {
+    setUser(null);
+    setAppointments([]);
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   return (
     <div className="App">
-      <h1>Welcome, {user.name}</h1>
+      <Routes>
+        {/* Redirect to login if not logged in */}
+        <Route path="/" element={<Navigate to="/login" />} />
 
-      <button onClick={() => {
-        setUser(null);
-        setView('login');
-        setAppointments([]);
-        localStorage.removeItem('token'); // Optional: if you're using JWT
-      }}>
-        Logout
-      </button>
+        <Route
+          path="/login"
+          element={
+            user ? (
+              <Navigate to="/appointments" />
+            ) : (
+              <Login onLogin={(loggedInUser) => {
+                setUser(loggedInUser);
+                navigate('/appointments');
+              }} />
+            )
+          }
+        />
 
-      <AppointmentForm onAdd={handleAddAppointment} />
-      <AppointmentList appointments={appointments} />
+        <Route
+          path="/register"
+          element={
+            user ? (
+              <Navigate to="/appointments" />
+            ) : (
+              <Register onSuccess={() => navigate('/login')} />
+            )
+          }
+        />
+
+        <Route
+          path="/appointments"
+          element={
+            user ? (
+              <div>
+                <h1>Welcome, {user.name}</h1>
+                <button onClick={handleLogout}>Logout</button>
+                <AppointmentForm onAdd={handleAddAppointment} />
+                <AppointmentList appointments={appointments} />
+              </div>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+      </Routes>
     </div>
   );
 }
