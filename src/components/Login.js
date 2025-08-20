@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { loginUser } from '../api/auth';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Login({ onLogin }) {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -15,7 +16,6 @@ function Login({ onLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic validation
     if (!form.email || !form.password) {
       setError('Both fields are required.');
       return;
@@ -24,8 +24,16 @@ function Login({ onLogin }) {
     try {
       setLoading(true);
       const response = await loginUser(form);
+
+      // Save token + user (with role)
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+
+      // Update React state (parent App)
       onLogin(response.data.user);
+
+      // Redirect to appointments
+      navigate('/appointments');
     } catch (err) {
       const message = err.response?.data?.error || 'Invalid credentials';
       setError(message);
@@ -35,7 +43,7 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row ">
+    <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left Side: Login Form */}
       <div className="flex items-center justify-center w-full md:w-1/2 p-6">
         <form
@@ -44,7 +52,6 @@ function Login({ onLogin }) {
         >
           <h2 className="text-3xl font-bold text-center text-green-700">Medilink Login</h2>
 
-          {/* Email */}
           <input
             name="email"
             type="email"
@@ -55,7 +62,6 @@ function Login({ onLogin }) {
             className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
           />
 
-          {/* Password */}
           <input
             name="password"
             type="password"
@@ -66,14 +72,12 @@ function Login({ onLogin }) {
             className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
           />
 
-          {/* Error Message */}
           {error && (
             <div className="text-red-600 text-sm text-center">
               {error}
             </div>
           )}
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
@@ -82,7 +86,6 @@ function Login({ onLogin }) {
             {loading ? 'Logging in...' : 'Login'}
           </button>
 
-          {/* Register Link */}
           <p className="text-center text-sm text-gray-600">
             New user?{' '}
             <Link to="/register" className="text-green-600 hover:underline">
@@ -98,7 +101,7 @@ function Login({ onLogin }) {
           src="/Images/doctorlogin.png"
           alt="Doctor login"
           className="w-full h-full object-cover"
-          onError={(e) => (e.target.style.display = 'none')} // Hide if not found
+          onError={(e) => (e.target.style.display = 'none')}
         />
       </div>
     </div>

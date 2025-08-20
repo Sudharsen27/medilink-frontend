@@ -5,10 +5,15 @@ import AppointmentForm from './components/AppointmentForm';
 import AppointmentList from './components/AppointmentList';
 import Register from './components/Register';
 import Login from './components/Login';
-import { fetchAppointments } from './api/appointments';
+import { fetchAppointments, fetchAllAppointments } from './api/appointments'; // 👈 include admin fetch
 
 function App() {
-  const [user, setUser] = useState(null);
+  // Load user from localStorage if available
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
   const [appointments, setAppointments] = useState([]);
   const navigate = useNavigate();
 
@@ -18,12 +23,23 @@ function App() {
     }
   }, [user]);
 
+  // Normal user appointments
   const loadAppointments = async () => {
     try {
       const response = await fetchAppointments();
       setAppointments(response.data);
     } catch (error) {
       console.error('Failed to fetch appointments:', error);
+    }
+  };
+
+  // Admin: load ALL appointments
+  const loadAllAppointments = async () => {
+    try {
+      const response = await fetchAllAppointments();
+      setAppointments(response.data);
+    } catch (error) {
+      console.error('Failed to fetch all appointments (Admin):', error);
     }
   };
 
@@ -35,13 +51,14 @@ function App() {
     setUser(null);
     setAppointments([]);
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     navigate('/login');
   };
 
   return (
     <div className="App">
       <Routes>
-        {/* Redirect to login if not logged in */}
+        {/* Redirect root to login */}
         <Route path="/" element={<Navigate to="/login" />} />
 
         <Route
@@ -50,10 +67,13 @@ function App() {
             user ? (
               <Navigate to="/appointments" />
             ) : (
-              <Login onLogin={(loggedInUser) => {
-                setUser(loggedInUser);
-                navigate('/appointments');
-              }} />
+              <Login
+                onLogin={(loggedInUser) => {
+                  setUser(loggedInUser);
+                  localStorage.setItem('user', JSON.stringify(loggedInUser)); // ✅ store role
+                  navigate('/appointments');
+                }}
+              />
             )
           }
         />
@@ -74,8 +94,18 @@ function App() {
           element={
             user ? (
               <div>
-                <h1>Welcome, {user.name}</h1>
+                <h1>
+                  Welcome, {user.name} ({user.role})
+                </h1>
                 <button onClick={handleLogout}>Logout</button>
+
+                {/* Only admins see this button */}
+                {user?.role === 'admin' && (
+                  <button onClick={loadAllAppointments} className="ml-2 bg-blue-600 text-white px-3 py-1 rounded">
+                    View All Appointments (Admin)
+                  </button>
+                )}
+
                 <AppointmentForm onAdd={handleAddAppointment} />
                 <AppointmentList appointments={appointments} />
               </div>
