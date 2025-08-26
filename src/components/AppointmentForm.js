@@ -12,11 +12,17 @@ export default function AppointmentForm({ onAdd }) {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // Merged handleSubmit with error handling
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await createAppointment(formData);
-    onAdd(response.data);
-    setFormData({ name: '', email: '', date: '' });
+    try {
+      const response = await createAppointment(formData);
+      onAdd(response.data);
+      setFormData({ name: '', email: '', date: '' });
+    } catch (err) {
+      console.error("Failed to create appointment:", err.response?.data || err.message);
+      alert(err.response?.data?.error || "Failed to create appointment");
+    }
   };
 
   // Get today's date in YYYY-MM-DD format for min attribute
