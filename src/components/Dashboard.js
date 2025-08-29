@@ -15,7 +15,7 @@ const Dashboard = ({ user, onLogout }) => {
     cancelled: 0
   });
 
-  // Load appointments (depends on user role)
+  // Load appointments based on user role
   const loadAppointments = useCallback(async () => {
     try {
       setLoading(true);
@@ -44,7 +44,7 @@ const Dashboard = ({ user, onLogout }) => {
     }
   }, []);
 
-  // Calculate stats when appointments change
+  // Calculate stats whenever appointments change
   const calculateStats = useCallback(() => {
     const total = appointments.length;
     const pending = appointments.filter((apt) => apt.status === 'pending').length;
@@ -54,7 +54,6 @@ const Dashboard = ({ user, onLogout }) => {
     setStats({ total, pending, confirmed, cancelled });
   }, [appointments]);
 
-  // Run loaders + stats
   useEffect(() => {
     loadAppointments();
   }, [loadAppointments]);
@@ -100,6 +99,7 @@ const Dashboard = ({ user, onLogout }) => {
               <h1 className="text-2xl font-bold text-gray-900">
                 Welcome back, {user.name}!
               </h1>
+              {/* ✅ Role display */}
               <p className="text-gray-600">
                 Role: <span className="font-medium capitalize">{user.role}</span>
               </p>
@@ -155,30 +155,10 @@ const Dashboard = ({ user, onLogout }) => {
           <div className="space-y-8">
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
-                title="Total Appointments"
-                value={stats.total}
-                color="border-l-blue-500"
-                icon="📅"
-              />
-              <StatCard
-                title="Pending"
-                value={stats.pending}
-                color="border-l-yellow-500"
-                icon="⏳"
-              />
-              <StatCard
-                title="Confirmed"
-                value={stats.confirmed}
-                color="border-l-green-500"
-                icon="✅"
-              />
-              <StatCard
-                title="Cancelled"
-                value={stats.cancelled}
-                color="border-l-red-500"
-                icon="❌"
-              />
+              <StatCard title="Total Appointments" value={stats.total} color="border-l-blue-500" icon="📅" />
+              <StatCard title="Pending" value={stats.pending} color="border-l-yellow-500" icon="⏳" />
+              <StatCard title="Confirmed" value={stats.confirmed} color="border-l-green-500" icon="✅" />
+              <StatCard title="Cancelled" value={stats.cancelled} color="border-l-red-500" icon="❌" />
             </div>
 
             {/* Recent Appointments */}

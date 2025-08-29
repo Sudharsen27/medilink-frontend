@@ -115,3 +115,4 @@ export default function AppointmentForm({ onAdd }) {
     </form>
   );
 }
+
