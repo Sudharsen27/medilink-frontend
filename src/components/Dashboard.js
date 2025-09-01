@@ -211,7 +211,10 @@ const Dashboard = ({ user, onLogout }) => {
               <h2 className="text-lg font-semibold text-gray-900">All Appointments</h2>
             </div>
             <div className="p-6">
-              <AppointmentList appointments={appointments} />
+              <AppointmentList 
+  appointments={appointments} 
+  onUpdate={loadAppointments} 
+/>
             </div>
           </div>
         )}

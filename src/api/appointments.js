@@ -4,7 +4,7 @@ const API = axios.create({
   baseURL: "http://localhost:5000/api/appointments",
 });
 
-// Automatically attach token to requests
+// ✅ Automatically attach token to requests
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -12,6 +12,8 @@ API.interceptors.request.use((req) => {
   }
   return req;
 });
+
+// ===== Appointments API =====
 
 // Normal user: get own appointments
 export const fetchAppointments = () => API.get("/");
@@ -21,3 +23,13 @@ export const fetchAllAppointments = () => API.get("/all");
 
 // Create appointment
 export const createAppointment = (appointment) => API.post("/", appointment);
+
+// Delete appointment
+export const deleteAppointment = (id) => API.delete(`/${id}`);
+
+// Update appointment
+export const updateAppointment = (id, data) => API.put(`/${id}`, data);
+
+// Update appointment status (admin only)
+export const updateAppointmentStatus = (id, status) =>
+  API.patch(`/${id}/status`, { status });
