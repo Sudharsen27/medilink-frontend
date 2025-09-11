@@ -1,16 +1,3 @@
-// // src/components/Avatar.jsx
-// const Avatar = ({ name, src }) => {
-//   return (
-//     <img
-//       src={src || `https://ui-avatars.com/api/?name=${name}`}
-//       alt={name}
-//       className="w-10 h-10 rounded-full object-cover"
-//     />
-//   );
-// };
-
-// export default Avatar;
-
 // src/components/Avatar.jsx
 import React from "react";
 

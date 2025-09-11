@@ -4,6 +4,7 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import Register from './components/Register';
 import Login from './components/Login';
+import Profile from './components/Profile'; // ✅ Import Profile component
 
 function App() {
   // Load user from localStorage if available
@@ -69,6 +70,12 @@ function App() {
               <Navigate to="/login" />
             )
           }
+        />
+
+        {/* ✅ Added Profile Route */}
+        <Route 
+          path="/profile" 
+          element={user ? <Profile user={user} /> : <Navigate to="/login" />} 
         />
 
         {/* Legacy route redirect for backwards compatibility */}
