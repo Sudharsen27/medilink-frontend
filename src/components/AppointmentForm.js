@@ -1,55 +1,100 @@
-import React, { useState } from 'react';
-import { createAppointment } from '../api/appointments';
+import React, { useState } from "react";
+import axios from "axios";
 
 export default function AppointmentForm({ onAdd }) {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    date: ''
+    patientName: "",
+    patientPhone: "",
+    doctorName: "",
+    date: "",
+    time: "",
+    whatsappOptIn: false,
   });
 
+  // Today’s date in YYYY-MM-DD for min attribute
+  const today = new Date().toISOString().split("T")[0];
+
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
-  // Merged handleSubmit with error handling
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      const response = await createAppointment(formData);
-      onAdd(response.data);
-      setFormData({ name: '', email: '', date: '' });
+      // ✅ Get JWT token from localStorage
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("❌ You must be logged in to book an appointment");
+        return;
+      }
+
+      const response = await axios.post(
+        "http://localhost:5000/api/appointments",
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`, // ✅ Send token
+          },
+        }
+      );
+
+      if (onAdd) onAdd(response.data);
+      alert("✅ Appointment booked successfully! WhatsApp reminder will be sent.");
+
+      // Reset form
+      setFormData({
+        patientName: "",
+        patientPhone: "",
+        doctorName: "",
+        date: "",
+        time: "",
+        whatsappOptIn: false,
+      });
     } catch (err) {
-      console.error("Failed to create appointment:", err.response?.data || err.message);
-      alert(err.response?.data?.error || "Failed to create appointment");
+      console.error(
+        "Failed to create appointment:",
+        err.response?.data || err.message
+      );
+      alert(err.response?.data?.error || "❌ Failed to create appointment");
     }
   };
 
-  // Get today's date in YYYY-MM-DD format for min attribute
-  const today = new Date().toISOString().split("T")[0];
-
   return (
-    <form 
-      onSubmit={handleSubmit} 
+    <form
+      onSubmit={handleSubmit}
       style={{
-        maxWidth: "400px",
+        maxWidth: "450px",
         margin: "20px auto",
         padding: "20px",
         border: "1px solid #cce3d2",
         borderRadius: "12px",
         backgroundColor: "#f6fff9",
-        boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
-        fontFamily: "Arial, sans-serif"
+        boxShadow: "0 4px 6px rgba(0,0,0,0.08)",
+        fontFamily: "Arial, sans-serif",
       }}
     >
-      <h3 style={{ color: "#2e7d32", textAlign: "center", marginBottom: "15px" }}>
+      <h2
+        style={{
+          color: "#2e7d32",
+          textAlign: "center",
+          marginBottom: "15px",
+          fontWeight: "bold",
+        }}
+      >
         Book an Appointment
-      </h3>
+      </h2>
 
       <input
-        name="name"
-        placeholder="Name"
-        value={formData.name}
+        type="text"
+        name="patientName"
+        placeholder="Patient Name"
+        value={formData.patientName}
         onChange={handleChange}
         required
         style={{
@@ -58,15 +103,14 @@ export default function AppointmentForm({ onAdd }) {
           marginBottom: "12px",
           borderRadius: "8px",
           border: "1px solid #a5d6a7",
-          outline: "none"
         }}
       />
 
       <input
-        name="email"
-        type="email"
-        placeholder="Email"
-        value={formData.email}
+        type="text"
+        name="patientPhone"
+        placeholder="Phone Number (e.g. +919876543210)"
+        value={formData.patientPhone}
         onChange={handleChange}
         required
         style={{
@@ -75,13 +119,28 @@ export default function AppointmentForm({ onAdd }) {
           marginBottom: "12px",
           borderRadius: "8px",
           border: "1px solid #a5d6a7",
-          outline: "none"
         }}
       />
 
       <input
-        name="date"
+        type="text"
+        name="doctorName"
+        placeholder="Doctor Name"
+        value={formData.doctorName}
+        onChange={handleChange}
+        required
+        style={{
+          width: "100%",
+          padding: "10px",
+          marginBottom: "12px",
+          borderRadius: "8px",
+          border: "1px solid #a5d6a7",
+        }}
+      />
+
+      <input
         type="date"
+        name="date"
         min={today}
         value={formData.date}
         onChange={handleChange}
@@ -89,12 +148,39 @@ export default function AppointmentForm({ onAdd }) {
         style={{
           width: "100%",
           padding: "10px",
-          marginBottom: "15px",
+          marginBottom: "12px",
           borderRadius: "8px",
           border: "1px solid #a5d6a7",
-          outline: "none"
         }}
       />
+
+      <input
+        type="time"
+        name="time"
+        value={formData.time}
+        onChange={handleChange}
+        required
+        style={{
+          width: "100%",
+          padding: "10px",
+          marginBottom: "12px",
+          borderRadius: "8px",
+          border: "1px solid #a5d6a7",
+        }}
+      />
+
+      <label
+        style={{ display: "flex", alignItems: "center", marginBottom: "15px" }}
+      >
+        <input
+          type="checkbox"
+          name="whatsappOptIn"
+          checked={formData.whatsappOptIn}
+          onChange={handleChange}
+          style={{ marginRight: "8px" }}
+        />
+        Send me WhatsApp reminders
+      </label>
 
       <button
         type="submit"
@@ -107,7 +193,7 @@ export default function AppointmentForm({ onAdd }) {
           borderRadius: "8px",
           cursor: "pointer",
           fontWeight: "bold",
-          fontSize: "16px"
+          fontSize: "16px",
         }}
       >
         Submit
@@ -115,4 +201,3 @@ export default function AppointmentForm({ onAdd }) {
     </form>
   );
 }
-
