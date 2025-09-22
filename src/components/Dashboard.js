@@ -1,16 +1,17 @@
-// src/components/Dashboard.js
+// components/Dashboard.js
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+// import {  useLocation } from 'react-router-dom';
 import AppointmentForm from './AppointmentForm';
 import AppointmentList from './AppointmentList';
 import { fetchAppointments, fetchAllAppointments } from '../api/appointments';
 import Avatar from './Avatar';
-import ActivityFeed from './ActivityFeed';
+// import ActivityFeed from './ActivityFeed';
 import SearchBar from './SearchBar';
 import FilterBar from './FilterBar';
 import DateRangePicker from './DateRangePicker';
 import ExportButton from './ExportButton';
 import NotificationBell from './NotificationBell';
-import UserMenu from './UserMenu';
+// import UserMenu from './UserMenu';
 
 const Dashboard = ({ user, onLogout }) => {
   const [appointments, setAppointments] = useState([]);
@@ -23,6 +24,7 @@ const Dashboard = ({ user, onLogout }) => {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  // const location = useLocation();
 
   const stats = useMemo(() => {
     const total = appointments.length;
@@ -34,12 +36,12 @@ const Dashboard = ({ user, onLogout }) => {
   }, [appointments]);
 
   // Mock activities data - in a real app, this would come from an API
-  const activities = useMemo(() => [
-    { id: 1, userName: 'Dr. Smith', userAvatar: '', action: 'Booked an appointment', time: '2m ago' },
-    { id: 2, userName: 'Patient John', userAvatar: '', action: 'Cancelled an appointment', time: '10m ago' },
-    { id: 3, userName: 'Nurse Sarah', userAvatar: '', action: 'Updated patient records', time: '15m ago' },
-    { id: 4, userName: 'Dr. Johnson', userAvatar: '', action: 'Completed a consultation', time: '30m ago' }
-  ], []);
+  // const activities = useMemo(() => [
+  //   { id: 1, userName: 'Dr. Smith', userAvatar: '', action: 'Booked an appointment', time: '2m ago' },
+  //   { id: 2, userName: 'Patient John', userAvatar: '', action: 'Cancelled an appointment', time: '10m ago' },
+  //   { id: 3, userName: 'Nurse Sarah', userAvatar: '', action: 'Updated patient records', time: '15m ago' },
+  //   { id: 4, userName: 'Dr. Johnson', userAvatar: '', action: 'Completed a consultation', time: '30m ago' }
+  // ], []);
 
   // Mock notifications data
   const mockNotifications = useMemo(() => [
@@ -173,8 +175,19 @@ const Dashboard = ({ user, onLogout }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Navigation Bar */}
+      <nav className="navbar bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+ 
+            </div>
+          </div>
+        </div>
+      </nav>
+
       {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
+      <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
@@ -213,7 +226,7 @@ const Dashboard = ({ user, onLogout }) => {
                 </button>
               )}
               
-              <UserMenu user={user} onLogout={onLogout} />
+              {/* <UserMenu user={user} onLogout={onLogout} /> */}
             </div>
           </div>
         </div>
@@ -366,7 +379,7 @@ const Dashboard = ({ user, onLogout }) => {
             </div>
 
             {/* Recent Activity Feed */}
-            <div className="bg-white rounded-lg shadow-md p-6">
+            {/* <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold">Recent Activity</h2>
                 <button className="text-blue-600 text-sm font-medium hover:text-blue-800">
@@ -374,7 +387,7 @@ const Dashboard = ({ user, onLogout }) => {
                 </button>
               </div>
               <ActivityFeed activities={activities} />
-            </div>
+            </div> */}
           </div>
         )}
 
