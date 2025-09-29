@@ -2,7 +2,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import DarkModeToggle from './DarkModeToggle';
-
 const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
   const location = useLocation();
 
@@ -47,6 +46,16 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
             }`}
           >
             Profile
+          </Link>
+            <Link
+            to="/doctors"
+            className={`px-4 py-2 rounded transition-colors ${
+              isActive('/doctors')
+                ? 'bg-gray-700 text-white'
+                : 'text-gray-300 hover:bg-gray-700'
+            }`}
+          >
+          Doctors
           </Link>
         </div>
 
