@@ -8,7 +8,7 @@ import Profile from './components/Profile';
 import Appointments from './components/Appointments';
 import Navbar from './components/Navbar';
 import DarkModeToggle from './components/DarkModeToggle';
-import Doctors from './pages/Doctors';
+import { Doctors, DoctorProfile } from './pages/Doctors'; // ✅ only named imports
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -98,7 +98,10 @@ function App() {
             path="/appointments"
             element={user ? <Appointments user={user} /> : <Navigate to="/login" />}
           />
+
+          {/* Doctors list and profile */}
           <Route path="/doctors" element={user ? <Doctors /> : <Navigate to="/login" />} />
+          <Route path="/doctors/:id" element={<DoctorProfile />} />
         </Routes>
       </div>
     </div>
