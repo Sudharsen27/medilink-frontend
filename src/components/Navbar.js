@@ -57,6 +57,18 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
           >
           Doctors
           </Link>
+          <Link
+  to="/telemedicine"
+  onClick={() => console.log('Telemedicine link clicked')}
+  className={`px-4 py-2 rounded transition-colors ${
+    isActive('/telemedicine')
+      ? 'bg-gray-700 text-white'
+      : 'text-gray-300 hover:bg-gray-700'
+  }`}
+>
+  Telemedicine
+</Link>
+
         </div>
 
         {/* User Info + Logout + Dark Mode Toggle */}
