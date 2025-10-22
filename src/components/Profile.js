@@ -18,7 +18,7 @@ export default function Profile({ user }) {
       .catch((err) => console.error('Error fetching profile:', err));
   }, [user]);
 
-  // Handle form input changes
+  // Handle form input changess
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
