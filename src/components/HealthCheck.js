@@ -1,5 +1,5 @@
 // components/HealthCheck.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '../context/ToastContext';
 
 const HealthCheck = () => {
@@ -7,7 +7,7 @@ const HealthCheck = () => {
   const [loading, setLoading] = useState(false);
   const { addToast } = useToast();
 
-  const checkHealth = async () => {
+  const checkHealth = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch('http://localhost:5000/health');
@@ -27,12 +27,12 @@ const HealthCheck = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [addToast]);
 
   useEffect(() => {
     // Auto-check on component mount
     checkHealth();
-  }, []);
+  }, [checkHealth]);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
