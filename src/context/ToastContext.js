@@ -1,19 +1,21 @@
 // src/context/ToastContext.js
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { v4 as uuidv4 } from 'uuid'; // ✅ Generates guaranteed unique IDs
 
 // Create the context
 const ToastContext = createContext();
 
-// Custom hook
+// Custom hook to access toast functions
 export const useToast = () => useContext(ToastContext);
 
-// Provider
+// Provider component
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
-  // Add a toast
+  // ✅ Add a toast notification
   const addToast = useCallback((message, type = 'info') => {
-    const id = Date.now();
+    const id = uuidv4(); // unique ID per toast
+
     setToasts((prev) => [...prev, { id, message, type }]);
 
     // Auto-remove toast after 3 seconds
@@ -22,7 +24,7 @@ export const ToastProvider = ({ children }) => {
     }, 3000);
   }, []);
 
-  // Remove a toast manually
+  // ✅ Manually remove a toast
   const removeToast = useCallback((id) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
@@ -31,17 +33,19 @@ export const ToastProvider = ({ children }) => {
     <ToastContext.Provider value={{ addToast, removeToast }}>
       {children}
 
-      {/* Toast Container */}
+      {/* ✅ Toast container */}
       <div className="fixed bottom-5 right-5 flex flex-col gap-2 z-50">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`px-4 py-2 rounded-lg shadow-lg text-white ${
+            className={`px-4 py-2 rounded-lg shadow-lg text-white transition-all duration-300 transform hover:scale-105 ${
               toast.type === 'success'
                 ? 'bg-green-500'
                 : toast.type === 'error'
                 ? 'bg-red-500'
-                : 'bg-blue-500'
+                : toast.type === 'info'
+                ? 'bg-blue-500'
+                : 'bg-gray-500'
             }`}
           >
             {toast.message}
