@@ -1,0 +1,199 @@
+/* ============================================
+   Doctor Card & Page Styling (Polished)
+   ============================================ */
+
+/* Smooth transitions for interactive elements */
+.doctor-card {
+  transition: all 0.3s ease;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.doctor-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+}
+
+/* Image smooth hover */
+.doctor-card img {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.doctor-card:hover img {
+  transform: scale(1.03);
+  opacity: 0.95;
+}
+
+/* ============================================
+   Loading Animation for Search
+   ============================================ */
+.search-loading {
+  animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* ============================================
+   Filter Chips Animation
+   ============================================ */
+.filter-chip {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+@media (max-width: 768px) {
+  .doctors-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .search-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .doctor-card {
+    border-radius: 1rem;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  button {
+    width: 100%;
+    font-size: 1rem;
+  }
+}
+
+/* ============================================
+   Dark Mode Enhancements
+   ============================================ */
+.dark .doctor-card {
+  background: #1f2937;
+  border: 1px solid #374151;
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.05);
+}
+
+.dark .doctor-card:hover {
+  box-shadow: 0 6px 14px rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================
+   Focus Styles for Accessibility
+   ============================================ */
+.search-input:focus {
+  outline: none;
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px #3b82f6;
+  border-color: #3b82f6;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* ============================================
+   Buttons - Subtle Professional Touch
+   ============================================ */
+button {
+  transition: all 0.2s ease-in-out;
+  border-radius: 0.5rem;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  background-color: #2563eb; /* keep hover slightly darker blue */
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25);
+}
+
+button:focus {
+  outline: none;
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px #2563eb;
+}
+
+.dark button:focus {
+  box-shadow:
+    0 0 0 2px #1f2937,
+    0 0 0 4px #2563eb;
+}
+
+/* ============================================
+   Text Readability (Dark Mode)
+   ============================================ */
+.dark p,
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  color: #f3f4f6;
+}
+
+/* ============================================
+   Section Titles - Simple Accent Line
+   ============================================ */
+h1::after,
+h2::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 3px;
+  margin-top: 0.4rem;
+  
+  border-radius: 2px;
+}
+
+/* ============================================
+   Form Elements
+   ============================================ */
+select,
+input {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+select:focus,
+input:focus {
+  border-color: #3b82f6;
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px #3b82f6;
+}
+
+/* ============================================
+   Animation for Fade-in Cards (Professional Subtle)
+   ============================================ */
+.doctor-card {
+  opacity: 0;
+  transform: translateY(15px);
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
