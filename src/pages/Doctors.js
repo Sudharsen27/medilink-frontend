@@ -620,15 +620,772 @@
 
 // export default Doctors;
 
-import React, { useEffect, useMemo, useState } from 'react';
+// import React, { useEffect, useMemo, useState } from 'react';
+// import { useParams, useNavigate } from 'react-router-dom';
+// import axios from 'axios';
+// import { useToast } from '../context/ToastContext';
+// import LoadingSpinner from '../components/LoadingSpinner';
+// import './Doctors.css';
+
+// // ==============================
+// // ✅ Doctors List Page (Responsive)
+// // ==============================
+// export function Doctors() {
+//   const [doctors, setDoctors] = useState([]);
+//   const [filteredDoctors, setFilteredDoctors] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [specializationFilter, setSpecializationFilter] = useState('all');
+//   const [sortBy, setSortBy] = useState('name');
+//   const { addToast } = useToast();
+
+//   const specializations = useMemo(() => {
+//     const specs = new Set(doctors.map((d) => d.specialization).filter(Boolean));
+//     return ['all', ...Array.from(specs)];
+//   }, [doctors]);
+
+//   useEffect(() => {
+//     const fetchDoctors = async () => {
+//       try {
+//         setLoading(true);
+//         const token = localStorage.getItem('token');
+//         const res = await axios.get('/api/doctors', {
+//           headers: token ? { Authorization: `Bearer ${token}` } : {},
+//         });
+//         setDoctors(res.data || []);
+//       } catch (err) {
+//         console.error('Failed to fetch doctors', err);
+//         addToast && addToast('Failed to load doctors', 'error');
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchDoctors();
+//   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+//   useEffect(() => {
+//     const filterAndSortDoctors = () => {
+//       let list = [...doctors];
+
+//       if (searchTerm.trim()) {
+//         const q = searchTerm.toLowerCase();
+//         list = list.filter(
+//           (d) =>
+//             (d.name || '').toLowerCase().includes(q) ||
+//             (d.specialization || '').toLowerCase().includes(q) ||
+//             (d.hospital || '').toLowerCase().includes(q)
+//         );
+//       }
+
+//       if (specializationFilter !== 'all') {
+//         list = list.filter((d) => d.specialization === specializationFilter);
+//       }
+
+//       list.sort((a, b) => {
+//         switch (sortBy) {
+//           case 'name':
+//             return (a.name || '').localeCompare(b.name || '');
+//           case 'experience':
+//             return (b.experience || 0) - (a.experience || 0);
+//           case 'rating':
+//             return (b.rating || 0) - (a.rating || 0);
+//           default:
+//             return 0;
+//         }
+//       });
+
+//       setFilteredDoctors(list);
+//     };
+//     filterAndSortDoctors();
+//   }, [doctors, searchTerm, specializationFilter, sortBy]); // eslint-disable-line react-hooks/exhaustive-deps
+
+//   const clearFilters = () => {
+//     setSearchTerm('');
+//     setSpecializationFilter('all');
+//     setSortBy('name');
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className="container mx-auto py-10 px-4 text-center">
+//         <h1 className="text-2xl font-bold mb-6">Our Doctors</h1>
+//         <LoadingSpinner text="Loading doctors..." />
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8">
+//       {/* Header */}
+//       <div className="mb-8 text-center md:text-left">
+//         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+//           Our Medical Team
+//         </h1>
+//         <p className="text-gray-600 dark:text-gray-400">
+//           Find and book appointments with our specialized doctors
+//         </p>
+//       </div>
+
+//       {/* Filter Section */}
+//       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-10">
+//         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+//           {/* Search */}
+//           <div className="lg:col-span-2">
+//             <label
+//               htmlFor="search"
+//               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+//             >
+//               Search Doctors
+//             </label>
+//             <div className="relative">
+//               <input
+//                 id="search"
+//                 value={searchTerm}
+//                 onChange={(e) => setSearchTerm(e.target.value)}
+//                 placeholder="Search by name, specialization, or hospital..."
+//                 className="search-input w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+//                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+//               />
+//               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+//                 <svg
+//                   className="h-5 w-5 text-gray-400"
+//                   fill="currentColor"
+//                   viewBox="0 0 20 20"
+//                 >
+//                   <path
+//                     fillRule="evenodd"
+//                     d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+//                     clipRule="evenodd"
+//                   />
+//                 </svg>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Specialization */}
+//           <div>
+//             <label
+//               htmlFor="specialization"
+//               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+//             >
+//               Specialization
+//             </label>
+//             <select
+//               id="specialization"
+//               value={specializationFilter}
+//               onChange={(e) => setSpecializationFilter(e.target.value)}
+//               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+//                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+//             >
+//               {specializations.map((spec) => (
+//                 <option key={spec} value={spec}>
+//                   {spec === 'all' ? 'All Specializations' : spec}
+//                 </option>
+//               ))}
+//             </select>
+//           </div>
+
+//           {/* Sort */}
+//           <div>
+//             <label
+//               htmlFor="sort"
+//               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+//             >
+//               Sort By
+//             </label>
+//             <select
+//               id="sort"
+//               value={sortBy}
+//               onChange={(e) => setSortBy(e.target.value)}
+//               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+//                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+//             >
+//               <option value="name">Name</option>
+//               <option value="experience">Experience</option>
+//               <option value="rating">Rating</option>
+//             </select>
+//           </div>
+//         </div>
+
+//         {/* Filters active summary */}
+//         {(searchTerm || specializationFilter !== 'all') && (
+//           <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+//             <div className="flex flex-wrap gap-2 items-center">
+//               <span className="text-sm text-gray-600 dark:text-gray-400">
+//                 Showing {filteredDoctors.length} of {doctors.length} doctors
+//               </span>
+//               {searchTerm && (
+//                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+//                                 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+//                   Search: "{searchTerm}"
+//                 </span>
+//               )}
+//               {specializationFilter !== 'all' && (
+//                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+//                                 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+//                   {specializationFilter}
+//                 </span>
+//               )}
+//             </div>
+//             <button
+//               onClick={clearFilters}
+//               className="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium"
+//             >
+//               Clear Filters
+//             </button>
+//           </div>
+//         )}
+//       </div>
+
+//       {/* Doctors Grid (Responsive) */}
+//       {filteredDoctors.length === 0 ? (
+//         <div className="text-center py-12">
+//           <svg
+//             className="mx-auto h-12 w-12 text-gray-400"
+//             fill="none"
+//             viewBox="0 0 24 24"
+//             stroke="currentColor"
+//           >
+//             <path
+//               strokeLinecap="round"
+//               strokeLinejoin="round"
+//               strokeWidth={1}
+//               d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+//             />
+//           </svg>
+//           <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-white">
+//             No doctors found
+//           </h3>
+//           <p className="mt-1 text-gray-500 dark:text-gray-400">
+//             Try adjusting your search or filters to find what you're looking
+//             for.
+//           </p>
+//           <button
+//             onClick={clearFilters}
+//             className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium 
+//                        rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 
+//                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+//           >
+//             Clear all filters
+//           </button>
+//         </div>
+//       ) : (
+//         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+//           {filteredDoctors.map((d) => (
+//             <DoctorCard key={d.id || d._id} doctor={d} />
+//           ))}
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+// // ==============================
+// // ✅ Doctor Card (Responsive)
+// // ==============================
+// function DoctorCard({ doctor }) {
+//   const navigate = useNavigate();
+
+//   return (
+//     <div
+//       className="doctor-card bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden 
+//                  hover:shadow-lg transition-all duration-300 cursor-pointer"
+//       onClick={() => navigate(`/doctors/${doctor.id || doctor._id}`)}
+//     >
+//       <div className="h-56 sm:h-64 md:h-52 bg-gray-200 dark:bg-gray-700 relative">
+//         {doctor.image ? (
+//           <img
+//             src={doctor.image.startsWith('http') ? doctor.image : `/uploads/${doctor.image}`}
+//             alt={doctor.name}
+//             className="w-full h-full object-cover"
+//           />
+//         ) : (
+//           <div className="w-full h-full flex items-center justify-center text-gray-400">
+//             <svg className="h-16 w-16" fill="currentColor" viewBox="0 0 20 20">
+//               <path
+//                 fillRule="evenodd"
+//                 d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+//                 clipRule="evenodd"
+//               />
+//             </svg>
+//           </div>
+//         )}
+//       </div>
+//       <div className="p-5 sm:p-6">
+//         <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">
+//           {doctor.name}
+//         </h3>
+//         <p className="text-blue-600 dark:text-blue-400 font-medium mb-2 text-sm sm:text-base">
+//           {doctor.specialization}
+//         </p>
+//         {doctor.hospital && (
+//           <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+//             {doctor.hospital}
+//           </p>
+//         )}
+//         {doctor.experience != null && (
+//           <p className="text-gray-600 dark:text-gray-400 text-sm">
+//             {doctor.experience} years of experience
+//           </p>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// // ==============================
+// // ✅ Doctor Profile Page (Responsive)
+// // ==============================
+// export function DoctorProfile() {
+//   const { id } = useParams();
+//   const [doctor, setDoctor] = useState(null);
+
+//   useEffect(() => {
+//     const fetchDoctor = async () => {
+//       try {
+//         const res = await axios.get(`/api/doctors/${id}`);
+//         setDoctor(res.data);
+//       } catch (err) {
+//         console.error('Error fetching doctor details:', err);
+//       }
+//     };
+//     fetchDoctor();
+//   }, [id]);
+
+//   if (!doctor) return <p className="text-center py-10">Loading doctor details...</p>;
+
+//   return (
+//     <div className="p-4 sm:p-6 md:p-10 max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md">
+//       <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 mb-6">
+//         {doctor.image && (
+//           <img
+//             src={doctor.image.startsWith('http') ? doctor.image : `/uploads/${doctor.image}`}
+//             alt={doctor.name}
+//             className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover mx-auto sm:mx-0 mb-4 sm:mb-0"
+//           />
+//         )}
+//         <div className="text-center sm:text-left">
+//           <h1 className="text-2xl sm:text-3xl font-bold">{doctor.name}</h1>
+//           <p className="text-gray-600 dark:text-gray-400">{doctor.specialization}</p>
+//           <p className="text-gray-500 mt-1">Experience: {doctor.experience} years</p>
+//           <p className="text-gray-500">Rating: {doctor.rating}</p>
+//         </div>
+//       </div>
+
+//       <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{doctor.bio}</p>
+//       <p className="mt-3 text-gray-500 dark:text-gray-400">{doctor.clinic_address}</p>
+
+//       <button
+//         className="mt-6 w-full sm:w-auto px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white 
+//                    font-medium rounded-lg transition-colors duration-200"
+//       >
+//         Book Appointment
+//       </button>
+//     </div>
+//   );
+// }
+
+// export default Doctors;
+
+
+
+// // src/pages/Doctors.jsx
+// import React, { useState, useEffect, useCallback } from 'react';
+// import { useNavigate, useParams } from 'react-router-dom';
+// import { useToast } from '../context/ToastContext';
+// import { useFavorites } from '../context/FavoritesContext';
+// import LoadingSpinner from '../components/LoadingSpinner';
+// import FavoriteButton from '../components/FavoriteButton';
+// import './Doctors.css';
+
+// // ==============================
+// // ✅ Doctors List Page
+// // ==============================
+// export function Doctors() {
+//   const [doctors, setDoctors] = useState([]);
+//   const [filteredDoctors, setFilteredDoctors] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [specializationFilter, setSpecializationFilter] = useState('all');
+//   const [sortBy, setSortBy] = useState('name');
+//   const [view, setView] = useState('grid');
+
+//   const { addToast } = useToast();
+//   const { favorites, isFavorite } = useFavorites();
+
+//   const navigate = useNavigate();
+
+//   const specializations = ['all', ...new Set(doctors.map((d) => d.specialization))];
+
+//   // ✅ Fetch doctors data
+//   const fetchDoctors = useCallback(async () => {
+//     try {
+//       setLoading(true);
+//       const token = localStorage.getItem('token');
+//       const response = await fetch('/api/doctors', {
+//         headers: { Authorization: `Bearer ${token}` },
+//       });
+//       if (!response.ok) throw new Error('Failed to fetch doctors');
+//       const data = await response.json();
+//       setDoctors(data);
+//     } catch (err) {
+//       console.error('Error fetching doctors:', err);
+//       addToast('Failed to load doctors', 'error');
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, [addToast]);
+
+//   // ✅ Filter and sort doctors
+//   const filterAndSortDoctors = useCallback(() => {
+//     let filtered = [...doctors];
+
+//     if (searchTerm) {
+//       filtered = filtered.filter(
+//         (d) =>
+//           d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//           d.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//           d.hospital?.toLowerCase().includes(searchTerm.toLowerCase())
+//       );
+//     }
+
+//     if (specializationFilter !== 'all') {
+//       filtered = filtered.filter((d) => d.specialization === specializationFilter);
+//     }
+
+//     filtered.sort((a, b) => {
+//       switch (sortBy) {
+//         case 'name':
+//           return a.name.localeCompare(b.name);
+//         case 'experience':
+//           return b.experience - a.experience;
+//         case 'rating':
+//           return b.rating - a.rating;
+//         case 'favorites':
+//           return isFavorite(a.id) === isFavorite(b.id)
+//             ? 0
+//             : isFavorite(a.id)
+//             ? -1
+//             : 1;
+//         default:
+//           return 0;
+//       }
+//     });
+
+//     setFilteredDoctors(filtered);
+//   }, [doctors, searchTerm, specializationFilter, sortBy, isFavorite]);
+
+//   // ✅ Run once on mount
+//   useEffect(() => {
+//     fetchDoctors();
+//   }, [fetchDoctors]);
+
+//   // ✅ Update filtered list on changes
+//   useEffect(() => {
+//     filterAndSortDoctors();
+//   }, [filterAndSortDoctors]);
+
+//   const clearFilters = () => {
+//     setSearchTerm('');
+//     setSpecializationFilter('all');
+//     setSortBy('name');
+//   };
+
+//   const handleViewFavorites = () => {
+//     setSortBy('favorites');
+//     addToast('Showing your favorite doctors', 'info');
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className="container mx-auto py-8">
+//         <h1 className="text-2xl font-bold mb-6">Our Doctors</h1>
+//         <LoadingSpinner text="Loading doctors..." />
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="container mx-auto py-8">
+//       {/* Header */}
+//       <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+//         <div>
+//           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+//             Our Medical Team
+//           </h1>
+//           <p className="text-gray-600 dark:text-gray-400">
+//             Find and book appointments with our specialized doctors
+//           </p>
+//         </div>
+
+//         {/* Favorites & View Toggle */}
+//         <div className="flex items-center gap-3">
+//           <button
+//             onClick={handleViewFavorites}
+//             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 dark:text-red-400 dark:bg-red-900/20 dark:border-red-800 dark:hover:bg-red-900/30"
+//           >
+//             <span>❤️</span> My Favorites ({favorites.length})
+//           </button>
+//           <div className="flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+//             <button
+//               onClick={() => setView('grid')}
+//               className={`p-2 ${
+//                 view === 'grid'
+//                   ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300'
+//                   : 'text-gray-600 dark:text-gray-400'
+//               }`}
+//             >
+//               ⏹️
+//             </button>
+//             <button
+//               onClick={() => setView('list')}
+//               className={`p-2 ${
+//                 view === 'list'
+//                   ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300'
+//                   : 'text-gray-600 dark:text-gray-400'
+//               }`}
+//             >
+//               ☰
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Filters */}
+//       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+//         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+//           {/* Search */}
+//           <div className="md:col-span-2">
+//             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+//               Search Doctors
+//             </label>
+//             <input
+//               value={searchTerm}
+//               onChange={(e) => setSearchTerm(e.target.value)}
+//               placeholder="Search by name, specialization, or hospital..."
+//               className="w-full pl-4 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+//             />
+//           </div>
+
+//           {/* Specialization */}
+//           <div>
+//             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+//               Specialization
+//             </label>
+//             <select
+//               value={specializationFilter}
+//               onChange={(e) => setSpecializationFilter(e.target.value)}
+//               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+//             >
+//               <option value="all">All Specializations</option>
+//               {specializations
+//                 .filter((spec) => spec !== 'all')
+//                 .map((spec) => (
+//                   <option key={spec} value={spec}>
+//                     {spec}
+//                   </option>
+//                 ))}
+//             </select>
+//           </div>
+
+//           {/* Sort */}
+//           <div>
+//             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+//               Sort By
+//             </label>
+//             <select
+//               value={sortBy}
+//               onChange={(e) => setSortBy(e.target.value)}
+//               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+//             >
+//               <option value="name">Name</option>
+//               <option value="experience">Experience</option>
+//               <option value="rating">Rating</option>
+//               <option value="favorites">Favorites First</option>
+//             </select>
+//           </div>
+//         </div>
+
+//         {/* Active Filters */}
+//         {(searchTerm || specializationFilter !== 'all' || sortBy === 'favorites') && (
+//           <div className="mt-4 flex items-center justify-between">
+//             <div className="text-sm text-gray-600 dark:text-gray-400">
+//               Showing {filteredDoctors.length} of {doctors.length} doctors
+//             </div>
+//             <button
+//               onClick={clearFilters}
+//               className="text-sm text-red-600 hover:text-red-800 dark:text-red-400"
+//             >
+//               Clear Filters
+//             </button>
+//           </div>
+//         )}
+//       </div>
+
+//       {/* Doctors Grid/List */}
+//       {filteredDoctors.length === 0 ? (
+//         <div className="text-center py-12">
+//           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+//             No doctors found
+//           </h3>
+//           <p className="text-gray-500 dark:text-gray-400">
+//             Try adjusting your search or filters.
+//           </p>
+//         </div>
+//       ) : (
+//         <div
+//           className={
+//             view === 'grid'
+//               ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+//               : 'space-y-4'
+//           }
+//         >
+//           {filteredDoctors.map((doctor) => (
+//             <DoctorCard key={doctor.id} doctor={doctor} view={view} />
+//           ))}
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+// // ==============================
+// // ✅ Doctor Card
+// // ==============================
+// const DoctorCard = ({ doctor, view }) => {
+//   const navigate = useNavigate();
+
+//   return (
+//     <div
+//       className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all ${
+//         view === 'list' ? 'flex items-center gap-4 p-4' : ''
+//       }`}
+//     >
+//       <div
+//         className={`${
+//           view === 'grid' ? 'h-48' : 'w-24 h-24 flex-shrink-0'
+//         } bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden`}
+//       >
+//         {doctor.image ? (
+//           <img
+//             src={`/uploads/${doctor.image}`}
+//             alt={doctor.name}
+//             className="w-full h-full object-cover"
+//           />
+//         ) : (
+//           <div className="w-full h-full flex items-center justify-center text-gray-400">
+//             <svg className="h-10 w-10" fill="currentColor" viewBox="0 0 20 20">
+//               <path
+//                 fillRule="evenodd"
+//                 d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+//                 clipRule="evenodd"
+//               />
+//             </svg>
+//           </div>
+//         )}
+//       </div>
+
+//       <div className={`p-4 ${view === 'list' ? 'flex-1' : ''}`}>
+//         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+//           {doctor.name}
+//         </h3>
+//         <p className="text-blue-600 dark:text-blue-400 font-medium">
+//           {doctor.specialization}
+//         </p>
+//         {doctor.hospital && (
+//           <p className="text-sm text-gray-600 dark:text-gray-400">
+//             {doctor.hospital}
+//           </p>
+//         )}
+//         <p className="text-sm text-gray-600 dark:text-gray-400">
+//           {doctor.experience} years of experience
+//         </p>
+//         <div className="mt-2 flex items-center justify-between">
+//           <FavoriteButton doctor={doctor} />
+//           <button
+//             onClick={() => navigate(`/doctors/${doctor.id}`)}
+//             className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg"
+//           >
+//             View Profile
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// // ==============================
+// // ✅ Doctor Profile Page
+// // ==============================
+// export function DoctorProfile() {
+//   const { id } = useParams();
+//   const [doctor, setDoctor] = useState(null);
+
+//   useEffect(() => {
+//     const fetchDoctor = async () => {
+//       try {
+//         const res = await fetch(`/api/doctors/${id}`);
+//         const data = await res.json();
+//         setDoctor(data);
+//       } catch (err) {
+//         console.error('Error fetching doctor details:', err);
+//       }
+//     };
+//     fetchDoctor();
+//   }, [id]);
+
+//   if (!doctor)
+//     return <p className="text-center py-10">Loading doctor details...</p>;
+
+//   return (
+//     <div className="p-4 sm:p-6 md:p-10 max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md">
+//       <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 mb-6">
+//         {doctor.image && (
+//           <img
+//             src={`/uploads/${doctor.image}`}
+//             alt={doctor.name}
+//             className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover mx-auto sm:mx-0 mb-4 sm:mb-0"
+//           />
+//         )}
+//         <div className="text-center sm:text-left">
+//           <h1 className="text-2xl sm:text-3xl font-bold">{doctor.name}</h1>
+//           <p className="text-gray-600 dark:text-gray-400">
+//             {doctor.specialization}
+//           </p>
+//           <p className="text-gray-500 mt-1">
+//             Experience: {doctor.experience} years
+//           </p>
+//           <p className="text-gray-500">Rating: {doctor.rating}</p>
+//         </div>
+//       </div>
+
+//       <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+//         {doctor.bio}
+//       </p>
+//       <p className="mt-3 text-gray-500 dark:text-gray-400">
+//         {doctor.clinic_address}
+//       </p>
+
+//       <button className="mt-6 w-full sm:w-auto px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg">
+//         Book Appointment
+//       </button>
+//     </div>
+//   );
+// }
+
+// export default Doctors;
+
+// src/pages/Doctors.jsx
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useToast } from '../context/ToastContext';
+import { useFavorites } from '../context/FavoritesContext';
 import LoadingSpinner from '../components/LoadingSpinner';
+import FavoriteButton from '../components/FavoriteButton';
 import './Doctors.css';
 
 // ==============================
-// ✅ Doctors List Page (Responsive)
+// ✅ Doctors List Page
 // ==============================
 export function Doctors() {
   const [doctors, setDoctors] = useState([]);
@@ -637,67 +1394,80 @@ export function Doctors() {
   const [searchTerm, setSearchTerm] = useState('');
   const [specializationFilter, setSpecializationFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name');
+  const [view, setView] = useState('grid');
+
   const { addToast } = useToast();
+  const { favorites, isFavorite } = useFavorites();
 
-  const specializations = useMemo(() => {
-    const specs = new Set(doctors.map((d) => d.specialization).filter(Boolean));
-    return ['all', ...Array.from(specs)];
-  }, [doctors]);
+  const specializations = ['all', ...new Set(doctors.map((d) => d.specialization))];
 
-  useEffect(() => {
-    const fetchDoctors = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem('token');
-        const res = await axios.get('/api/doctors', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        setDoctors(res.data || []);
-      } catch (err) {
-        console.error('Failed to fetch doctors', err);
-        addToast && addToast('Failed to load doctors', 'error');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDoctors();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    const filterAndSortDoctors = () => {
-      let list = [...doctors];
-
-      if (searchTerm.trim()) {
-        const q = searchTerm.toLowerCase();
-        list = list.filter(
-          (d) =>
-            (d.name || '').toLowerCase().includes(q) ||
-            (d.specialization || '').toLowerCase().includes(q) ||
-            (d.hospital || '').toLowerCase().includes(q)
-        );
-      }
-
-      if (specializationFilter !== 'all') {
-        list = list.filter((d) => d.specialization === specializationFilter);
-      }
-
-      list.sort((a, b) => {
-        switch (sortBy) {
-          case 'name':
-            return (a.name || '').localeCompare(b.name || '');
-          case 'experience':
-            return (b.experience || 0) - (a.experience || 0);
-          case 'rating':
-            return (b.rating || 0) - (a.rating || 0);
-          default:
-            return 0;
-        }
+  // ✅ Fetch doctors data
+  const fetchDoctors = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/doctors', {
+        headers: { Authorization: `Bearer ${token}` },
       });
+      if (!response.ok) throw new Error('Failed to fetch doctors');
+      const data = await response.json();
+      setDoctors(data);
+    } catch (err) {
+      console.error('Error fetching doctors:', err);
+      addToast('Failed to load doctors', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [addToast]);
 
-      setFilteredDoctors(list);
-    };
+  // ✅ Filter and sort doctors
+  const filterAndSortDoctors = useCallback(() => {
+    let filtered = [...doctors];
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (d) =>
+          d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          d.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          d.hospital?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (specializationFilter !== 'all') {
+      filtered = filtered.filter((d) => d.specialization === specializationFilter);
+    }
+
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'experience':
+          return b.experience - a.experience;
+        case 'rating':
+          return b.rating - a.rating;
+        case 'favorites':
+          return isFavorite(a.id) === isFavorite(b.id)
+            ? 0
+            : isFavorite(a.id)
+            ? -1
+            : 1;
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredDoctors(filtered);
+  }, [doctors, searchTerm, specializationFilter, sortBy, isFavorite]);
+
+  // ✅ Run once on mount
+  useEffect(() => {
+    fetchDoctors();
+  }, [fetchDoctors]);
+
+  // ✅ Update filtered list on changes
+  useEffect(() => {
     filterAndSortDoctors();
-  }, [doctors, searchTerm, specializationFilter, sortBy]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [filterAndSortDoctors]);
 
   const clearFilters = () => {
     setSearchTerm('');
@@ -705,9 +1475,14 @@ export function Doctors() {
     setSortBy('name');
   };
 
+  const handleViewFavorites = () => {
+    setSortBy('favorites');
+    addToast('Showing your favorite doctors', 'info');
+  };
+
   if (loading) {
     return (
-      <div className="container mx-auto py-10 px-4 text-center">
+      <div className="container mx-auto py-8">
         <h1 className="text-2xl font-bold mb-6">Our Doctors</h1>
         <LoadingSpinner text="Loading doctors..." />
       </div>
@@ -715,121 +1490,115 @@ export function Doctors() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8">
+    <div className="container mx-auto py-8">
       {/* Header */}
-      <div className="mb-8 text-center md:text-left">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-          Our Medical Team
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Find and book appointments with our specialized doctors
-        </p>
+      <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Our Medical Team
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Find and book appointments with our specialized doctors
+          </p>
+        </div>
+
+        {/* Favorites & View Toggle */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleViewFavorites}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 dark:text-red-400 dark:bg-red-900/20 dark:border-red-800 dark:hover:bg-red-900/30"
+          >
+            <span>❤️</span> My Favorites ({favorites.length})
+          </button>
+          <div className="flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+            <button
+              onClick={() => setView('grid')}
+              className={`p-2 ${
+                view === 'grid'
+                  ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300'
+                  : 'text-gray-600 dark:text-gray-400'
+              }`}
+            >
+              ⏹️
+            </button>
+            <button
+              onClick={() => setView('list')}
+              className={`p-2 ${
+                view === 'list'
+                  ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300'
+                  : 'text-gray-600 dark:text-gray-400'
+              }`}
+            >
+              ☰
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Filter Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Filters */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
-          <div className="lg:col-span-2">
-            <label
-              htmlFor="search"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Search Doctors
             </label>
-            <div className="relative">
-              <input
-                id="search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by name, specialization, or hospital..."
-                className="search-input w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-              />
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg
-                  className="h-5 w-5 text-gray-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-            </div>
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by name, specialization, or hospital..."
+              className="w-full pl-4 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            />
           </div>
 
           {/* Specialization */}
           <div>
-            <label
-              htmlFor="specialization"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Specialization
             </label>
             <select
-              id="specialization"
               value={specializationFilter}
               onChange={(e) => setSpecializationFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             >
-              {specializations.map((spec) => (
-                <option key={spec} value={spec}>
-                  {spec === 'all' ? 'All Specializations' : spec}
-                </option>
-              ))}
+              <option value="all">All Specializations</option>
+              {specializations
+                .filter((spec) => spec !== 'all')
+                .map((spec) => (
+                  <option key={spec} value={spec}>
+                    {spec}
+                  </option>
+                ))}
             </select>
           </div>
 
           {/* Sort */}
           <div>
-            <label
-              htmlFor="sort"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Sort By
             </label>
             <select
-              id="sort"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             >
               <option value="name">Name</option>
               <option value="experience">Experience</option>
               <option value="rating">Rating</option>
+              <option value="favorites">Favorites First</option>
             </select>
           </div>
         </div>
 
-        {/* Filters active summary */}
-        {(searchTerm || specializationFilter !== 'all') && (
-          <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                Showing {filteredDoctors.length} of {doctors.length} doctors
-              </span>
-              {searchTerm && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
-                                bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                  Search: "{searchTerm}"
-                </span>
-              )}
-              {specializationFilter !== 'all' && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
-                                bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  {specializationFilter}
-                </span>
-              )}
+        {/* Active Filters */}
+        {(searchTerm || specializationFilter !== 'all' || sortBy === 'favorites') && (
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Showing {filteredDoctors.length} of {doctors.length} doctors
             </div>
             <button
               onClick={clearFilters}
-              className="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium"
+              className="text-sm text-red-600 hover:text-red-800 dark:text-red-400"
             >
               Clear Filters
             </button>
@@ -837,42 +1606,26 @@ export function Doctors() {
         )}
       </div>
 
-      {/* Doctors Grid (Responsive) */}
+      {/* Doctors Grid/List */}
       {filteredDoctors.length === 0 ? (
         <div className="text-center py-12">
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1}
-              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-white">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
             No doctors found
           </h3>
-          <p className="mt-1 text-gray-500 dark:text-gray-400">
-            Try adjusting your search or filters to find what you're looking
-            for.
+          <p className="text-gray-500 dark:text-gray-400">
+            Try adjusting your search or filters.
           </p>
-          <button
-            onClick={clearFilters}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium 
-                       rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Clear all filters
-          </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredDoctors.map((d) => (
-            <DoctorCard key={d.id || d._id} doctor={d} />
+        <div
+          className={
+            view === 'grid'
+              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+              : 'space-y-4'
+          }
+        >
+          {filteredDoctors.map((doctor) => (
+            <DoctorCard key={doctor.id} doctor={doctor} view={view} />
           ))}
         </div>
       )}
@@ -881,27 +1634,31 @@ export function Doctors() {
 }
 
 // ==============================
-// ✅ Doctor Card (Responsive)
+// ✅ Doctor Card
 // ==============================
-function DoctorCard({ doctor }) {
+const DoctorCard = ({ doctor, view }) => {
   const navigate = useNavigate();
 
   return (
     <div
-      className="doctor-card bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden 
-                 hover:shadow-lg transition-all duration-300 cursor-pointer"
-      onClick={() => navigate(`/doctors/${doctor.id || doctor._id}`)}
+      className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all ${
+        view === 'list' ? 'flex items-center gap-4 p-4' : ''
+      }`}
     >
-      <div className="h-56 sm:h-64 md:h-52 bg-gray-200 dark:bg-gray-700 relative">
+      <div
+        className={`${
+          view === 'grid' ? 'h-48' : 'w-24 h-24 flex-shrink-0'
+        } bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden`}
+      >
         {doctor.image ? (
           <img
-            src={doctor.image.startsWith('http') ? doctor.image : `/uploads/${doctor.image}`}
+            src={`/uploads/${doctor.image}`}
             alt={doctor.name}
             className="w-full h-full object-cover"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400">
-            <svg className="h-16 w-16" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="h-10 w-10" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
                 d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
@@ -911,30 +1668,38 @@ function DoctorCard({ doctor }) {
           </div>
         )}
       </div>
-      <div className="p-5 sm:p-6">
-        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">
+
+      <div className={`p-4 ${view === 'list' ? 'flex-1' : ''}`}>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           {doctor.name}
         </h3>
-        <p className="text-blue-600 dark:text-blue-400 font-medium mb-2 text-sm sm:text-base">
+        <p className="text-blue-600 dark:text-blue-400 font-medium">
           {doctor.specialization}
         </p>
         {doctor.hospital && (
-          <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             {doctor.hospital}
           </p>
         )}
-        {doctor.experience != null && (
-          <p className="text-gray-600 dark:text-gray-400 text-sm">
-            {doctor.experience} years of experience
-          </p>
-        )}
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          {doctor.experience} years of experience
+        </p>
+        <div className="mt-2 flex items-center justify-between">
+          <FavoriteButton doctor={doctor} />
+          <button
+            onClick={() => navigate(`/doctors/${doctor.id}`)}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg"
+          >
+            View Profile
+          </button>
+        </div>
       </div>
     </div>
   );
-}
+};
 
 // ==============================
-// ✅ Doctor Profile Page (Responsive)
+// ✅ Doctor Profile Page
 // ==============================
 export function DoctorProfile() {
   const { id } = useParams();
@@ -943,8 +1708,9 @@ export function DoctorProfile() {
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
-        const res = await axios.get(`/api/doctors/${id}`);
-        setDoctor(res.data);
+        const res = await fetch(`/api/doctors/${id}`);
+        const data = await res.json();
+        setDoctor(data);
       } catch (err) {
         console.error('Error fetching doctor details:', err);
       }
@@ -952,33 +1718,39 @@ export function DoctorProfile() {
     fetchDoctor();
   }, [id]);
 
-  if (!doctor) return <p className="text-center py-10">Loading doctor details...</p>;
+  if (!doctor)
+    return <p className="text-center py-10">Loading doctor details...</p>;
 
   return (
     <div className="p-4 sm:p-6 md:p-10 max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md">
       <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 mb-6">
         {doctor.image && (
           <img
-            src={doctor.image.startsWith('http') ? doctor.image : `/uploads/${doctor.image}`}
+            src={`/uploads/${doctor.image}`}
             alt={doctor.name}
             className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover mx-auto sm:mx-0 mb-4 sm:mb-0"
           />
         )}
         <div className="text-center sm:text-left">
           <h1 className="text-2xl sm:text-3xl font-bold">{doctor.name}</h1>
-          <p className="text-gray-600 dark:text-gray-400">{doctor.specialization}</p>
-          <p className="text-gray-500 mt-1">Experience: {doctor.experience} years</p>
+          <p className="text-gray-600 dark:text-gray-400">
+            {doctor.specialization}
+          </p>
+          <p className="text-gray-500 mt-1">
+            Experience: {doctor.experience} years
+          </p>
           <p className="text-gray-500">Rating: {doctor.rating}</p>
         </div>
       </div>
 
-      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{doctor.bio}</p>
-      <p className="mt-3 text-gray-500 dark:text-gray-400">{doctor.clinic_address}</p>
+      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+        {doctor.bio}
+      </p>
+      <p className="mt-3 text-gray-500 dark:text-gray-400">
+        {doctor.clinic_address}
+      </p>
 
-      <button
-        className="mt-6 w-full sm:w-auto px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white 
-                   font-medium rounded-lg transition-colors duration-200"
-      >
+      <button className="mt-6 w-full sm:w-auto px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg">
         Book Appointment
       </button>
     </div>
