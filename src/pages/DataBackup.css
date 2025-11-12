@@ -1,0 +1,270 @@
+.backup-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.backup-header {
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.backup-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 1rem 0;
+}
+
+.dark .backup-title {
+  color: #f9fafb;
+}
+
+.backup-subtitle {
+  font-size: 1.125rem;
+  color: #6b7280;
+  margin: 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dark .backup-subtitle {
+  color: #d1d5db;
+}
+
+.backup-section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 1.5rem 0;
+}
+
+.dark .backup-section-title {
+  color: #f9fafb;
+}
+
+/* Data Summary */
+.backup-summary {
+  margin-bottom: 3rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.summary-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark .summary-card {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+.summary-icon {
+  font-size: 2rem;
+}
+
+.summary-content {
+  flex: 1;
+}
+
+.summary-count {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #3b82f6;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.dark .summary-count {
+  color: #60a5fa;
+}
+
+.summary-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.dark .summary-label {
+  color: #9ca3af;
+}
+
+/* Export Options */
+.backup-options {
+  margin-bottom: 3rem;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.option-card {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.option-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.dark .option-card {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+.option-card--primary {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #eff6ff, #ffffff);
+}
+
+.dark .option-card--primary {
+  background: linear-gradient(135deg, #1e3a8a, #1f2937);
+  border-color: #60a5fa;
+}
+
+.option-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.option-content {
+  flex: 1;
+  margin-bottom: 1.5rem;
+}
+
+.option-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.75rem 0;
+}
+
+.dark .option-title {
+  color: #f9fafb;
+}
+
+.option-description {
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.dark .option-description {
+  color: #d1d5db;
+}
+
+.option-action {
+  text-align: center;
+}
+
+/* Information Section */
+.backup-info {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.dark .backup-info {
+  background: #374151;
+}
+
+.info-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.info-item h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.75rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dark .info-item h4 {
+  color: #f9fafb;
+}
+
+.info-item p {
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.dark .info-item p {
+  color: #d1d5db;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .backup-container {
+    padding: 1rem 0.5rem;
+  }
+
+  .backup-title {
+    font-size: 2rem;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .options-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .option-card {
+    padding: 1.5rem;
+  }
+
+  .info-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .backup-info {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .backup-header {
+    margin-bottom: 2rem;
+  }
+
+  .backup-title {
+    font-size: 1.75rem;
+  }
+
+  .backup-subtitle {
+    font-size: 1rem;
+  }
+}
