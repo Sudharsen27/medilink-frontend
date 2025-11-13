@@ -510,32 +510,32 @@ const Dashboard = ({ user, onLogout }) => {
   }, [appointments]);
 
   // Mock notifications data
-  const mockNotifications = useMemo(() => [
-    { 
-      id: 1, 
-      message: 'New appointment request from Jane Doe', 
-      type: 'info', 
-      read: false, 
-      time: '5 min ago',
-      action: () => setActiveTab('appointments')
-    },
-    { 
-      id: 2, 
-      message: 'Appointment with John Smith confirmed', 
-      type: 'success', 
-      read: false, 
-      time: '1 hour ago',
-      action: () => setActiveTab('appointments')
-    },
-    { 
-      id: 3, 
-      message: 'Reminder: Meeting at 2 PM today', 
-      type: 'warning', 
-      read: true, 
-      time: '3 hours ago',
-      action: () => setActiveTab('appointments')
-    }
-  ], []);
+  // const mockNotifications = useMemo(() => [
+  //   { 
+  //     id: 1, 
+  //     message: 'New appointment request from Jane Doe', 
+  //     type: 'info', 
+  //     read: false, 
+  //     time: '5 min ago',
+  //     action: () => setActiveTab('appointments')
+  //   },
+  //   { 
+  //     id: 2, 
+  //     message: 'Appointment with John Smith confirmed', 
+  //     type: 'success', 
+  //     read: false, 
+  //     time: '1 hour ago',
+  //     action: () => setActiveTab('appointments')
+  //   },
+  //   { 
+  //     id: 3, 
+  //     message: 'Reminder: Meeting at 2 PM today', 
+  //     type: 'warning', 
+  //     read: true, 
+  //     time: '3 hours ago',
+  //     action: () => setActiveTab('appointments')
+  //   }
+  // ], []);
 
   // Load appointments based on user role
   const loadAppointments = useCallback(async () => {
@@ -586,8 +586,8 @@ const Dashboard = ({ user, onLogout }) => {
   // Load data on component mount and when refresh is triggered
   useEffect(() => {
     loadAppointments();
-    setNotifications(mockNotifications);
-  }, [loadAppointments, refreshTrigger, mockNotifications]);
+    // setNotifications(mockNotifications);
+  }, [loadAppointments, refreshTrigger, ]);
 
   // Event handlers
   const handleAddAppointment = useCallback((newAppointment) => {
