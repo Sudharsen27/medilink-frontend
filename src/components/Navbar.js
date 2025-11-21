@@ -1700,7 +1700,7 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
               </Link>
 
               {/* DATA BACKUP */}
-              <Link
+              {/* <Link
                 to="/data-backup"
                 className={`group flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-300 
                   ${isActive("/data-backup")
@@ -1710,7 +1710,7 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
               >
                 <Icons.Database />
                 <span className="text-sm">Backup</span>
-              </Link>
+              </Link> */}
             </div>
 
             {/* RIGHT SECTION */}
@@ -1859,7 +1859,7 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
               </Link>
 
               {/* DATA BACKUP MOBILE */}
-              <Link to="/data-backup"
+              {/* <Link to="/data-backup"
                 className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all
                   ${isActive("/data-backup")
                     ? "bg-white/25 text-white scale-105"
@@ -1867,7 +1867,7 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
                   }`}>
                 <Icons.Database />
                 <span className="font-medium flex-1">Data Backup</span>
-              </Link>
+              </Link> */}
             </div>
 
             {/* 🔔 NOTIFICATIONS MOBILE */}

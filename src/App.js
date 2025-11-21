@@ -807,7 +807,7 @@ import TelemedicineList from './pages/TelemedicineList';
 import Telemedicine from './pages/Telemedicine';
 import { Doctors, DoctorProfile } from './pages/Doctors';
 import Favorites from './pages/Favorites';
-import DataBackup from './pages/DataBackup';
+// import DataBackup from './pages/DataBackup';
 
 // Context
 import { ToastProvider, useToast } from './context/ToastContext';
@@ -922,7 +922,8 @@ function App() {
           <Route path="/favorites" element={user ? <Favorites /> : <Navigate to="/login" />} />
 
           {/* Backup */}
-          <Route path="/data-backup" element={user ? <DataBackup /> : <Navigate to="/login" />} />
+
+          {/* <Route path="/data-backup" element={user ? <DataBackup /> : <Navigate to="/login" />} /> */}
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} />} />

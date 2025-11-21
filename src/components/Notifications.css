@@ -1,8 +1,17 @@
+
+/* ===========================
+   MAIN WRAPPER
+=========================== */
+
 .notifications-container {
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem 1rem;
 }
+
+/* ===========================
+   HEADER SECTION
+=========================== */
 
 .notifications-header {
   display: flex;
@@ -12,6 +21,8 @@
   flex-wrap: wrap;
   gap: 1rem;
 }
+
+/* TITLE */
 
 .notifications-title {
   font-size: 2rem;
@@ -24,6 +35,8 @@
   color: #f9fafb;
 }
 
+/* SUBTITLE */
+
 .notifications-subtitle {
   color: #6b7280;
   font-size: 1.125rem;
@@ -34,10 +47,16 @@
   color: #d1d5db;
 }
 
+/* ===========================
+   STATS SECTION
+=========================== */
+
 .notifications-stats {
   display: flex;
   gap: 1.5rem;
 }
+
+/* EACH STAT BLOCK */
 
 .stat-item {
   text-align: center;
@@ -53,6 +72,8 @@
   border-color: #374151;
 }
 
+/* BIG NUMBER */
+
 .stat-number {
   display: block;
   font-size: 2rem;
@@ -65,6 +86,8 @@
   color: #60a5fa;
 }
 
+/* LABEL */
+
 .stat-label {
   font-size: 0.875rem;
   color: #6b7280;
@@ -75,6 +98,10 @@
 .dark .stat-label {
   color: #9ca3af;
 }
+
+/* ===========================
+   CONTENT BOX
+=========================== */
 
 .notifications-content {
   background: white;
@@ -88,7 +115,10 @@
   border-color: #374151;
 }
 
-/* Responsive Design */
+/* ===========================
+   RESPONSIVE DESIGN
+=========================== */
+
 @media (max-width: 768px) {
   .notifications-container {
     padding: 1rem 0.5rem;
@@ -100,7 +130,7 @@
   }
 
   .notifications-stats {
-    align-self: stretch;
+    width: 100%;
     justify-content: space-around;
   }
 
