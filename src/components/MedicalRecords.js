@@ -1,236 +1,555 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+// import React, { useEffect, useState } from "react";
+// import { useMedicalRecords } from "../context/MedicalRecordsContext";
 
-const MedicalRecords = ({ user }) => {
-  const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
+// const MedicalRecords = () => {
+//   const {
+//     medicalRecords,
+//     loading,
+//     fetchRecords,
+//     deleteMedicalRecord,
+//     uploadMedicalRecord,
+//   } = useMedicalRecords();
+
+//   const [showAddForm, setShowAddForm] = useState(false);
+//   const [formData, setFormData] = useState({
+//     record_type: "lab_report",
+//     title: "",
+//     description: "",
+//     record_date: new Date().toISOString().split("T")[0],
+//   });
+//   const [file, setFile] = useState(null);
+//   const [error, setError] = useState("");
+
+//   useEffect(() => {
+//     fetchRecords();
+//   }, [fetchRecords]);
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+
+//     if (!file) {
+//       setError("File is required");
+//       return;
+//     }
+
+//     try {
+//       await uploadMedicalRecord(formData, file);
+//       setShowAddForm(false);
+//       setFormData({
+//         record_type: "lab_report",
+//         title: "",
+//         description: "",
+//         record_date: new Date().toISOString().split("T")[0],
+//       });
+//       setFile(null);
+//       setError("");
+//     } catch (err) {
+//       setError("Upload failed");
+//     }
+//   };
+
+//   return (
+//     <div className="p-6 max-w-4xl mx-auto">
+//       <h1 className="text-2xl font-bold mb-4">Medical Records</h1>
+
+//       <button
+//         className="bg-blue-600 text-white px-4 py-2 rounded mb-4"
+//         onClick={() => setShowAddForm(true)}
+//       >
+//         ➕ Add Record
+//       </button>
+
+//       {/* MODAL */}
+//       {showAddForm && (
+//         <div className="fixed inset-0 bg-black/50 flex justify-center items-center">
+//           <div className="bg-white p-6 rounded-lg w-80 shadow-xl">
+//             <h2 className="text-lg font-semibold mb-3">Add Medical Record</h2>
+
+//             <form onSubmit={handleSubmit} className="space-y-3">
+//               <select
+//                 className="w-full border p-2 rounded"
+//                 value={formData.record_type}
+//                 onChange={(e) =>
+//                   setFormData({ ...formData, record_type: e.target.value })
+//                 }
+//               >
+//                 <option value="lab_report">Lab Report</option>
+//                 <option value="x_ray">X-Ray</option>
+//                 <option value="blood_test">Blood Test</option>
+//                 <option value="mri_scan">MRI Scan</option>
+//                 <option value="prescription">Prescription</option>
+//               </select>
+
+//               <input
+//                 className="w-full border p-2 rounded"
+//                 placeholder="Title"
+//                 required
+//                 value={formData.title}
+//                 onChange={(e) =>
+//                   setFormData({ ...formData, title: e.target.value })
+//                 }
+//               />
+
+//               <textarea
+//                 className="w-full border p-2 rounded"
+//                 placeholder="Description"
+//                 rows="2"
+//                 value={formData.description}
+//                 onChange={(e) =>
+//                   setFormData({ ...formData, description: e.target.value })
+//                 }
+//               />
+
+//               <input
+//                 type="date"
+//                 className="w-full border p-2 rounded"
+//                 value={formData.record_date}
+//                 onChange={(e) =>
+//                   setFormData({ ...formData, record_date: e.target.value })
+//                 }
+//               />
+
+//               <input
+//                 type="file"
+//                 className="w-full"
+//                 onChange={(e) => setFile(e.target.files[0])}
+//               />
+
+//               {error && (
+//                 <p className="text-red-600 text-sm">{error}</p>
+//               )}
+
+//               <button className="bg-green-600 text-white w-full py-2 rounded">
+//                 ✅ Save
+//               </button>
+//             </form>
+
+//             <button
+//               className="mt-3 w-full bg-gray-300 py-2 rounded"
+//               onClick={() => setShowAddForm(false)}
+//             >
+//               Cancel
+//             </button>
+//           </div>
+//         </div>
+//       )}
+
+//       {loading && <p>Loading...</p>}
+
+//       {medicalRecords.length === 0 ? (
+//         <p>No records found</p>
+//       ) : (
+//         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//           {medicalRecords.map((r) => (
+//             <div
+//               key={r.id}
+//               className="bg-white p-4 rounded shadow border flex flex-col gap-2"
+//             >
+//               <h3 className="font-bold">{r.title}</h3>
+//               <p className="text-sm text-gray-600">{r.record_type}</p>
+//               <p>{r.description}</p>
+
+//               <small className="text-gray-500">
+//                 {new Date(r.record_date).toLocaleDateString()}
+//               </small>
+
+//               <div className="flex gap-2">
+//                 {r.file_url && (
+//                   <a
+//                     href={r.file_url}
+//                     target="_blank"
+//                     rel="noreferrer"
+//                     className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
+//                   >
+//                     📥 Download
+//                   </a>
+//                 )}
+
+//                 <button
+//                   className="bg-red-600 text-white px-3 py-1 rounded text-sm"
+//                   onClick={() => deleteMedicalRecord(r.id)}
+//                 >
+//                   🗑 Delete
+//                 </button>
+//               </div>
+//             </div>
+//           ))}
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default MedicalRecords;
+
+import React, { useEffect, useState } from "react";
+import { FileText, Plus, X, Download, Trash2, Calendar, Upload, Activity } from "lucide-react";
+import { useMedicalRecords } from "../context/MedicalRecordsContext";
+
+const MedicalRecords = () => {
+  const {
+    medicalRecords,
+    loading,
+    fetchRecords,
+    deleteMedicalRecord,
+    uploadMedicalRecord,
+  } = useMedicalRecords();
+
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newRecord, setNewRecord] = useState({
-    record_type: '',
-    title: '',
-    description: '',
-    record_date: ''
+  const [formData, setFormData] = useState({
+    record_type: "lab_report",
+    title: "",
+    description: "",
+    record_date: new Date().toISOString().split("T")[0],
   });
+  const [file, setFile] = useState(null);
+  const [error, setError] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
-    fetchMedicalRecords();
-  }, []);
+    fetchRecords();
+  }, [fetchRecords]);
 
-  const fetchMedicalRecords = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('/api/medical-records', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setRecords(response.data);
-    } catch (error) {
-      console.error('Error fetching medical records:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAddRecord = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!file) {
+      setError("File is required");
+      return;
+    }
+
     try {
-      const token = localStorage.getItem('token');
-      await axios.post('/api/medical-records', newRecord, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setNewRecord({
-        record_type: '',
-        title: '',
-        description: '',
-        record_date: ''
-      });
+      await uploadMedicalRecord(formData, file);
       setShowAddForm(false);
-      fetchMedicalRecords(); // Refresh the list
-    } catch (error) {
-      console.error('Error adding medical record:', error);
+      setFormData({
+        record_type: "lab_report",
+        title: "",
+        description: "",
+        record_date: new Date().toISOString().split("T")[0],
+      });
+      setFile(null);
+      setError("");
+    } catch (err) {
+      setError("Upload failed");
     }
   };
 
-  const downloadRecord = (recordId, recordTitle) => {
-    // Simulate download functionality
-    alert(`Downloading: ${recordTitle}`);
-    // In real implementation, this would download the actual file
+  const recordTypeConfig = {
+    lab_report: { label: "Lab Report", color: "bg-blue-500", icon: FileText },
+    x_ray: { label: "X-Ray", color: "bg-purple-500", icon: Activity },
+    blood_test: { label: "Blood Test", color: "bg-red-500", icon: FileText },
+    mri_scan: { label: "MRI Scan", color: "bg-indigo-500", icon: Activity },
+    prescription: { label: "Prescription", color: "bg-green-500", icon: FileText },
   };
-
-  const getRecordTypeColor = (type) => {
-    const colors = {
-      'lab_report': 'bg-blue-100 text-blue-800',
-      'prescription': 'bg-green-100 text-green-800',
-      'scan': 'bg-purple-100 text-purple-800',
-      'surgery': 'bg-red-100 text-red-800',
-      'consultation': 'bg-yellow-100 text-yellow-800',
-      'other': 'bg-gray-100 text-gray-800'
-    };
-    return colors[type] || colors['other'];
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
 
   return (
-    <div className="max-w-6xl mx-auto py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Medical Records</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 animate-fadeIn">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Medical Records
+          </h1>
+          <p className="text-gray-600">Manage and organize your health documents</p>
+        </div>
+
+        {/* Add Button */}
         <button
           onClick={() => setShowAddForm(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+          className="mb-6 group relative px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2"
         >
+          <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
           Add New Record
         </button>
-      </div>
 
-      {/* Add Record Form */}
-      {showAddForm && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Add New Medical Record</h2>
-          <form onSubmit={handleAddRecord} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Record Type
-                </label>
-                <select
-                  value={newRecord.record_type}
-                  onChange={(e) => setNewRecord({...newRecord, record_type: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  required
+        {/* Modal */}
+        {showAddForm && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 animate-fadeIn">
+            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl transform animate-slideUp">
+              <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-900">Add Medical Record</h2>
+                <button
+                  onClick={() => setShowAddForm(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <option value="">Select Type</option>
-                  <option value="lab_report">Lab Report</option>
-                  <option value="prescription">Prescription</option>
-                  <option value="scan">Scan Report</option>
-                  <option value="surgery">Surgery Report</option>
-                  <option value="consultation">Consultation Note</option>
-                  <option value="other">Other</option>
-                </select>
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Record Date
-                </label>
-                <input
-                  type="date"
-                  value={newRecord.record_date}
-                  onChange={(e) => setNewRecord({...newRecord, record_date: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  required
-                />
-              </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Title
-              </label>
-              <input
-                type="text"
-                value={newRecord.title}
-                onChange={(e) => setNewRecord({...newRecord, title: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Enter record title"
-                required
-              />
-            </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Record Type
+                  </label>
+                  <select
+                    className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    value={formData.record_type}
+                    onChange={(e) =>
+                      setFormData({ ...formData, record_type: e.target.value })
+                    }
+                  >
+                    {Object.entries(recordTypeConfig).map(([key, { label }]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Description
-              </label>
-              <textarea
-                value={newRecord.description}
-                onChange={(e) => setNewRecord({...newRecord, description: e.target.value})}
-                rows="3"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Enter record description"
-              />
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Title
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="e.g., Annual Blood Work 2024"
+                    required
+                    value={formData.title}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
+                  />
+                </div>
 
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => setShowAddForm(false)}
-                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
-              >
-                Add Record
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                    placeholder="Additional notes or details..."
+                    rows="3"
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                  />
+                </div>
 
-      {/* Records List */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        {records.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="text-gray-400 dark:text-gray-500 text-6xl mb-4">📁</div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              No medical records found
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              Get started by adding your first medical record.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {records.map(record => (
-              <div key={record.id} className="border dark:border-gray-600 rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getRecordTypeColor(record.record_type)}`}>
-                        {record.record_type.replace('_', ' ').toUpperCase()}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Record Date
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    value={formData.record_date}
+                    onChange={(e) =>
+                      setFormData({ ...formData, record_date: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Upload File
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      id="file-upload"
+                      className="hidden"
+                      onChange={(e) => setFile(e.target.files[0])}
+                    />
+                    <label
+                      htmlFor="file-upload"
+                      className="flex items-center justify-center gap-2 w-full border-2 border-dashed border-gray-300 p-6 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all"
+                    >
+                      <Upload className="w-6 h-6 text-gray-400" />
+                      <span className="text-gray-600">
+                        {file ? file.name : "Click to upload file"}
                       </span>
-                      <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
-                        {record.title}
-                      </h3>
+                    </label>
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-600 text-sm">{error}</p>
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={handleSubmit}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+                  >
+                    Save Record
+                  </button>
+                  <button
+                    onClick={() => setShowAddForm(false)}
+                    className="px-6 bg-gray-100 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && medicalRecords.length === 0 && (
+          <div className="text-center py-16 animate-fadeIn">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-12 h-12 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No records yet</h3>
+            <p className="text-gray-600">Start by adding your first medical record</p>
+          </div>
+        )}
+
+        {/* Records Grid */}
+        {!loading && medicalRecords.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
+            {medicalRecords.map((record, index) => {
+              const config = recordTypeConfig[record.record_type] || recordTypeConfig.lab_report;
+              const Icon = config.icon;
+              
+              return (
+                <div
+                  key={record.id}
+                  className="group bg-white rounded-xl shadow-md hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 overflow-hidden border border-gray-100"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  {/* Color Header */}
+                  <div className={`h-2 ${config.color}`}></div>
+                  
+                  <div className="p-6">
+                    {/* Icon and Type */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={`${config.color} p-3 rounded-lg`}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                          {config.label}
+                        </span>
+                      </div>
                     </div>
-                    
+
+                    {/* Title */}
+                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+                      {record.title}
+                    </h3>
+
+                    {/* Description */}
                     {record.description && (
-                      <p className="text-gray-600 dark:text-gray-400 mb-3">
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
                         {record.description}
                       </p>
                     )}
-                    
-                    <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-                      <span>Date: {new Date(record.record_date).toLocaleDateString()}</span>
-                      <span>Added: {new Date(record.created_at).toLocaleDateString()}</span>
+
+                    {/* Date */}
+                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                      <Calendar className="w-4 h-4" />
+                      {new Date(record.record_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2 pt-4 border-t border-gray-100">
+                      {record.file_url && (
+                        <a
+                          href={record.file_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-100 transition-colors"
+                        >
+                          <Download className="w-4 h-4" />
+                          Download
+                        </a>
+                      )}
+
+                      <button
+                        onClick={() => setDeleteConfirm(record.id)}
+                        className="flex items-center justify-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-lg font-medium hover:bg-red-100 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                  
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => downloadRecord(record.id, record.title)}
-                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors"
-                    >
-                      Download
-                    </button>
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors">
-                      View
-                    </button>
-                  </div>
                 </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirm && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 animate-fadeIn">
+            <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-slideUp">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-6 h-6 text-red-600" />
               </div>
-            ))}
+              <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
+                Delete Record?
+              </h3>
+              <p className="text-gray-600 text-center mb-6">
+                This action cannot be undone. The record will be permanently deleted.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    deleteMedicalRecord(deleteConfirm);
+                    setDeleteConfirm(null);
+                  }}
+                  className="flex-1 bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+          from { 
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to { 
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out;
+        }
+        
+        .animate-slideUp {
+          animation: slideUp 0.3s ease-out;
+        }
+        
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
     </div>
   );
 };
