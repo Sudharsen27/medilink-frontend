@@ -1566,7 +1566,22 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
         d="M19 9l-7 7-7-7" />
     </svg>
-  )
+  ),  PatientProfile: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 21v-1c0-3.314 3.582-6 8-6s8 2.686 8 6v1"
+      />
+    </svg>
+  ),
 };
 
 const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
@@ -1617,6 +1632,7 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
     { to: "/doctors", label: "Doctors", icon: Icons.Doctor },
     { to: "/telemedicine", label: "Telemedicine", icon: Icons.Video },
     { to: "/profile", label: "Profile", icon: Icons.User },
+    
   ];
 
   return (
@@ -1764,6 +1780,14 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
                         <Icons.User />
                         My Profile
                       </Link>
+     <Link
+  to="/patient-profile"
+  className="flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 dark:hover:bg-gray-700"
+>
+  <Icons.PatientProfile />
+  Patient Profile
+</Link>
+
 
                       <Link to="/settings"
                         className="flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 dark:hover:bg-gray-700">
