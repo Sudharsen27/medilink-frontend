@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { usePatientProfile } from '../context/PatientProfileContext';
 import LoadingSpinner from './LoadingSpinner';
@@ -34,47 +35,51 @@ const PatientProfile = ({ user }) => {
     <div className="patient-profile-container">
       {/* Header */}
       <div className="profile-header">
-        <div className="header-content">
-          <h1>My Health Profile</h1>
-          <p>Manage your personal and medical information</p>
+        <div className="header-main">
+          <div className="header-text">
+            <h1>Health Profile</h1>
+            <p className="header-subtitle">Welcome back, {user?.name || 'Patient'}</p>
+          </div>
+          <div className="header-date">
+            {new Date().toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </div>
         </div>
-        <div className="header-actions">
-          <button className="btn-primary" onClick={() => setActiveTab('add-metric')}>
-            + Add Health Metric
+        
+        <button 
+          className="primary-button"
+          onClick={() => setActiveTab('add-metric')}
+        >
+          <span className="button-icon">+</span>
+          Record Health Data
+        </button>
+      </div>
+
+      {/* Navigation Tabs */}
+      <nav className="profile-nav">
+        {[
+          { id: 'overview', label: 'Overview', icon: '📊' },
+          { id: 'personal', label: 'Personal', icon: '👤' },
+          { id: 'medical', label: 'Medical', icon: '🏥' },
+          { id: 'metrics', label: 'Metrics', icon: '📈' }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`nav-item ${activeTab === tab.id ? 'active' : ''}`}
+          >
+            <span className="nav-icon">{tab.icon}</span>
+            <span className="nav-label">{tab.label}</span>
           </button>
-        </div>
-      </div>
+        ))}
+      </nav>
 
-      {/* Tabs */}
-      <div className="profile-tabs">
-        <button
-          onClick={() => setActiveTab('overview')}
-          className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
-        >
-          📊 Overview
-        </button>
-        <button
-          onClick={() => setActiveTab('personal')}
-          className={`tab-btn ${activeTab === 'personal' ? 'active' : ''}`}
-        >
-          👤 Personal
-        </button>
-        <button
-          onClick={() => setActiveTab('medical')}
-          className={`tab-btn ${activeTab === 'medical' ? 'active' : ''}`}
-        >
-          🏥 Medical
-        </button>
-        <button
-          onClick={() => setActiveTab('metrics')}
-          className={`tab-btn ${activeTab === 'metrics' ? 'active' : ''}`}
-        >
-          📈 Health Metrics
-        </button>
-      </div>
-
-      {/* Tab Content */}
-      <div className="tab-content">
+      {/* Main Content */}
+      <main className="profile-content">
         {activeTab === 'overview' && (
           <OverviewTab 
             patientProfile={patientProfile}
@@ -107,6 +112,7 @@ const PatientProfile = ({ user }) => {
           <HealthMetricsTab 
             healthMetrics={healthMetrics}
             addHealthMetric={addHealthMetric}
+            setActiveTab={setActiveTab}
           />
         )}
         
@@ -116,7 +122,7 @@ const PatientProfile = ({ user }) => {
             onComplete={() => setActiveTab('metrics')}
           />
         )}
-      </div>
+      </main>
     </div>
   );
 };
@@ -130,126 +136,143 @@ const OverviewTab = ({ patientProfile, bmi, bmiCategory, age, healthMetrics }) =
   const weightMetrics = getRecentMetrics('weight');
   const latestWeight = weightMetrics[0];
 
+  const StatCard = ({ icon, value, label, trend, className = '' }) => (
+    <div className={`stat-card ${className}`}>
+      <div className="stat-header">
+        <div className="stat-icon">{icon}</div>
+        {trend && <div className={`stat-trend ${trend}`}>{trend}</div>}
+      </div>
+      <div className="stat-value">{value}</div>
+      <div className="stat-label">{label}</div>
+    </div>
+  );
+
   return (
     <div className="overview-tab">
-      {/* Health Summary Cards */}
-      <div className="health-summary-cards">
-        <div className="summary-card">
-          <div className="summary-icon">👤</div>
-          <div className="summary-content">
-            <div className="summary-value">{age || 'N/A'}</div>
-            <div className="summary-label">Age</div>
-          </div>
-        </div>
-        
-        <div className="summary-card">
-          <div className="summary-icon">🩸</div>
-          <div className="summary-content">
-            <div className="summary-value">
-              {patientProfile?.personal_info?.blood_type || 'N/A'}
-            </div>
-            <div className="summary-label">Blood Type</div>
-          </div>
-        </div>
-        
-        <div className="summary-card">
-          <div className="summary-icon">⚖️</div>
-          <div className="summary-content">
-            <div className="summary-value">{bmi || 'N/A'}</div>
-            <div className="summary-label">
+      {/* Key Health Stats */}
+      <section className="stats-grid">
+        <StatCard 
+          icon="👤"
+          value={age || 'N/A'}
+          label="Age"
+          className="age-card"
+        />
+        <StatCard 
+          icon="🩸"
+          value={patientProfile?.personal_info?.blood_type || 'N/A'}
+          label="Blood Type"
+          className="blood-card"
+        />
+        <StatCard 
+          icon="⚖️"
+          value={bmi || 'N/A'}
+          label={
+            <span>
               BMI {bmiCategory && (
-                <span className={`bmi-category ${bmiCategory.color}`}>
-                  ({bmiCategory.category})
+                <span className={`bmi-badge ${bmiCategory.color}`}>
+                  {bmiCategory.category}
                 </span>
               )}
-            </div>
-          </div>
-        </div>
-        
-        <div className="summary-card">
-          <div className="summary-icon">📊</div>
-          <div className="summary-content">
-            <div className="summary-value">{healthMetrics.length}</div>
-            <div className="summary-label">Metrics Recorded</div>
-          </div>
-        </div>
-      </div>
+            </span>
+          }
+          className="bmi-card"
+        />
+        <StatCard 
+          icon="📊"
+          value={healthMetrics.length}
+          label="Records"
+          className="records-card"
+        />
+      </section>
 
-      {/* Recent Metrics */}
-      <div className="recent-metrics-section">
-        <h3>Recent Health Metrics</h3>
-        
-        <div className="metrics-grid">
+      {/* Current Health Status */}
+      <section className="health-status">
+        <h2>Current Health Status</h2>
+        <div className="status-grid">
           {latestBP && (
-            <div className="metric-card">
-              <h4>Blood Pressure</h4>
-              <div className="metric-value">
-                {latestBP.systolic}/{latestBP.diastolic} mmHg
+            <div className="status-card">
+              <div className="status-header">
+                <span className="status-icon">🩸</span>
+                <h3>Blood Pressure</h3>
               </div>
-              <div className="metric-trend">
-                Trend: {getMetricTrend('blood_pressure')}
+              <div className="status-value">{latestBP.systolic}/{latestBP.diastolic}</div>
+              <div className="status-unit">mmHg</div>
+              <div className="status-trend">
+                {getMetricTrend('blood_pressure')}
               </div>
             </div>
           )}
           
           {latestWeight && (
-            <div className="metric-card">
-              <h4>Weight</h4>
-              <div className="metric-value">
-                {latestWeight.value} kg
+            <div className="status-card">
+              <div className="status-header">
+                <span className="status-icon">⚖️</span>
+                <h3>Weight</h3>
               </div>
-              <div className="metric-trend">
-                Trend: {getMetricTrend('weight')}
-              </div>
-            </div>
-          )}
-          
-          {patientProfile?.medical_history?.conditions?.length > 0 && (
-            <div className="metric-card">
-              <h4>Medical Conditions</h4>
-              <div className="metric-value">
-                {patientProfile.medical_history.conditions.length}
-              </div>
-              <div className="conditions-list">
-                {patientProfile.medical_history.conditions.slice(0, 3).map(condition => (
-                  <span key={condition} className="condition-tag">{condition}</span>
-                ))}
+              <div className="status-value">{latestWeight.value}</div>
+              <div className="status-unit">kg</div>
+              <div className="status-trend">
+                {getMetricTrend('weight')}
               </div>
             </div>
           )}
-          
-          {patientProfile?.medical_history?.allergies?.length > 0 && (
-            <div className="metric-card">
-              <h4>Allergies</h4>
-              <div className="metric-value">
-                {patientProfile.medical_history.allergies.length}
-              </div>
-              <div className="allergies-list">
-                {patientProfile.medical_history.allergies.slice(0, 3).map(allergy => (
-                  <span key={allergy} className="allergy-tag">{allergy}</span>
-                ))}
-              </div>
-            </div>
-          )}
+        </div>
+      </section>
+
+      {/* Medical Summary */}
+      <div className="medical-summary">
+        <div className="summary-column">
+          <h3>Medical Conditions</h3>
+          <div className="conditions-list">
+            {patientProfile?.medical_history?.conditions?.length > 0 ? (
+              patientProfile.medical_history.conditions.slice(0, 4).map(condition => (
+                <span key={condition} className="medical-tag condition">
+                  {condition}
+                </span>
+              ))
+            ) : (
+              <p className="no-data">No conditions recorded</p>
+            )}
+          </div>
+        </div>
+        
+        <div className="summary-column">
+          <h3>Allergies</h3>
+          <div className="allergies-list">
+            {patientProfile?.medical_history?.allergies?.length > 0 ? (
+              patientProfile.medical_history.allergies.slice(0, 4).map(allergy => (
+                <span key={allergy} className="medical-tag allergy">
+                  {allergy}
+                </span>
+              ))
+            ) : (
+              <p className="no-data">No allergies recorded</p>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Emergency Contact */}
       {patientProfile?.personal_info?.emergency_contact && (
-        <div className="emergency-contact-section">
-          <h3>Emergency Contact</h3>
-          <div className="emergency-contact-card">
-            <div className="contact-name">
-              {patientProfile.personal_info.emergency_contact.name}
+        <section className="emergency-contact">
+          <h2>Emergency Contact</h2>
+          <div className="contact-card">
+            <div className="contact-avatar">
+              {patientProfile.personal_info.emergency_contact.name.charAt(0)}
             </div>
-            <div className="contact-relationship">
-              {patientProfile.personal_info.emergency_contact.relationship}
-            </div>
-            <div className="contact-phone">
-              📞 {patientProfile.personal_info.emergency_contact.phone}
+            <div className="contact-details">
+              <div className="contact-name">
+                {patientProfile.personal_info.emergency_contact.name}
+              </div>
+              <div className="contact-relationship">
+                {patientProfile.personal_info.emergency_contact.relationship}
+              </div>
+              <div className="contact-phone">
+                {patientProfile.personal_info.emergency_contact.phone}
+              </div>
             </div>
           </div>
-        </div>
+        </section>
       )}
     </div>
   );
@@ -275,178 +298,136 @@ const PersonalInfoTab = ({ patientProfile, editingSection, setEditingSection, up
     setEditingSection(null);
   };
 
+  const personalFields = [
+    { key: 'full_name', label: 'Full Name', type: 'text' },
+    { key: 'date_of_birth', label: 'Date of Birth', type: 'date' },
+    { 
+      key: 'gender', 
+      label: 'Gender', 
+      type: 'select',
+      options: ['', 'male', 'female', 'other', 'prefer_not_to_say']
+    },
+    { 
+      key: 'blood_type', 
+      label: 'Blood Type', 
+      type: 'select',
+      options: ['', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+    },
+    { key: 'height', label: 'Height (cm)', type: 'number' },
+    { key: 'weight', label: 'Weight (kg)', type: 'number', step: '0.1' }
+  ];
+
   return (
     <div className="personal-info-tab">
       <div className="section-header">
         <h2>Personal Information</h2>
-        {editingSection !== 'personal' ? (
-          <button 
-            onClick={() => setEditingSection('personal')}
-            className="btn-edit"
-          >
-            ✏️ Edit
-          </button>
-        ) : (
-          <div className="edit-actions">
-            <button onClick={handleCancel} className="btn-cancel">Cancel</button>
-            <button onClick={handleSave} className="btn-save">Save</button>
+        <div className="section-actions">
+          {editingSection !== 'personal' ? (
+            <button 
+              onClick={() => setEditingSection('personal')}
+              className="edit-button"
+            >
+              Edit
+            </button>
+          ) : (
+            <>
+              <button onClick={handleCancel} className="secondary-button">Cancel</button>
+              <button onClick={handleSave} className="primary-button">Save Changes</button>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="form-grid">
+        {personalFields.map(field => (
+          <div key={field.key} className="form-field">
+            <label className="field-label">{field.label}</label>
+            {editingSection === 'personal' ? (
+              field.type === 'select' ? (
+                <select
+                  value={formData[field.key] || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                  className="field-input"
+                >
+                  {field.options.map(option => (
+                    <option key={option} value={option}>
+                      {option === '' ? 'Select' : option.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type={field.type}
+                  step={field.step}
+                  value={formData[field.key] || ''}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    [field.key]: field.type === 'number' ? 
+                      (e.target.value ? parseFloat(e.target.value) : null) : 
+                      e.target.value 
+                  }))}
+                  className="field-input"
+                />
+              )
+            ) : (
+              <div className="field-value">
+                {field.key === 'date_of_birth' && patientProfile?.personal_info?.date_of_birth 
+                  ? new Date(patientProfile.personal_info.date_of_birth).toLocaleDateString()
+                  : field.key === 'height' && patientProfile?.personal_info?.height
+                  ? `${patientProfile.personal_info.height} cm`
+                  : field.key === 'weight' && patientProfile?.personal_info?.weight
+                  ? `${patientProfile.personal_info.weight} kg`
+                  : patientProfile?.personal_info?.[field.key] || 'Not set'
+                }
+              </div>
+            )}
           </div>
-        )}
+        ))}
       </div>
 
-      <div className="info-grid">
-        <div className="info-group">
-          <label>Full Name</label>
-          {editingSection === 'personal' ? (
-            <input
-              type="text"
-              value={formData.full_name || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-            />
-          ) : (
-            <div className="info-value">{patientProfile?.personal_info?.full_name || 'Not set'}</div>
-          )}
-        </div>
-
-        <div className="info-group">
-          <label>Date of Birth</label>
-          {editingSection === 'personal' ? (
-            <input
-              type="date"
-              value={formData.date_of_birth || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, date_of_birth: e.target.value }))}
-            />
-          ) : (
-            <div className="info-value">
-              {patientProfile?.personal_info?.date_of_birth 
-                ? new Date(patientProfile.personal_info.date_of_birth).toLocaleDateString()
-                : 'Not set'
-              }
-            </div>
-          )}
-        </div>
-
-        <div className="info-group">
-          <label>Gender</label>
-          {editingSection === 'personal' ? (
-            <select
-              value={formData.gender || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
-            >
-              <option value="">Select</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-              <option value="prefer_not_to_say">Prefer not to say</option>
-            </select>
-          ) : (
-            <div className="info-value">{patientProfile?.personal_info?.gender || 'Not set'}</div>
-          )}
-        </div>
-
-        <div className="info-group">
-          <label>Blood Type</label>
-          {editingSection === 'personal' ? (
-            <select
-              value={formData.blood_type || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, blood_type: e.target.value }))}
-            >
-              <option value="">Select</option>
-              <option value="A+">A+</option>
-              <option value="A-">A-</option>
-              <option value="B+">B+</option>
-              <option value="B-">B-</option>
-              <option value="AB+">AB+</option>
-              <option value="AB-">AB-</option>
-              <option value="O+">O+</option>
-              <option value="O-">O-</option>
-            </select>
-          ) : (
-            <div className="info-value">{patientProfile?.personal_info?.blood_type || 'Not set'}</div>
-          )}
-        </div>
-
-        <div className="info-group">
-          <label>Height (cm)</label>
-          {editingSection === 'personal' ? (
-            <input
-              type="number"
-              value={formData.height || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value ? parseInt(e.target.value) : null }))}
-            />
-          ) : (
-            <div className="info-value">
-              {patientProfile?.personal_info?.height ? `${patientProfile.personal_info.height} cm` : 'Not set'}
-            </div>
-          )}
-        </div>
-
-        <div className="info-group">
-          <label>Weight (kg)</label>
-          {editingSection === 'personal' ? (
-            <input
-              type="number"
-              step="0.1"
-              value={formData.weight || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value ? parseFloat(e.target.value) : null }))}
-            />
-          ) : (
-            <div className="info-value">
-              {patientProfile?.personal_info?.weight ? `${patientProfile.personal_info.weight} kg` : 'Not set'}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Emergency Contact Section */}
-      <div className="emergency-contact-edit">
+      {/* Emergency Contact */}
+      <div className="emergency-section">
         <h3>Emergency Contact</h3>
-        <div className="emergency-contact-form">
+        <div className="emergency-form">
           <div className="form-row">
-            <div className="info-group">
+            <div className="form-field">
               <label>Name</label>
               <input
                 type="text"
                 value={formData.emergency_contact?.name || ''}
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
-                  emergency_contact: {
-                    ...prev.emergency_contact,
-                    name: e.target.value
-                  }
+                  emergency_contact: { ...prev.emergency_contact, name: e.target.value }
                 }))}
-                placeholder="Contact name"
+                className="field-input"
+                disabled={editingSection !== 'personal'}
               />
             </div>
-            <div className="info-group">
+            <div className="form-field">
               <label>Relationship</label>
               <input
                 type="text"
                 value={formData.emergency_contact?.relationship || ''}
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
-                  emergency_contact: {
-                    ...prev.emergency_contact,
-                    relationship: e.target.value
-                  }
+                  emergency_contact: { ...prev.emergency_contact, relationship: e.target.value }
                 }))}
-                placeholder="e.g., Spouse, Parent"
+                className="field-input"
+                disabled={editingSection !== 'personal'}
               />
             </div>
           </div>
-          <div className="info-group">
+          <div className="form-field">
             <label>Phone Number</label>
             <input
               type="tel"
               value={formData.emergency_contact?.phone || ''}
               onChange={(e) => setFormData(prev => ({
                 ...prev,
-                emergency_contact: {
-                  ...prev.emergency_contact,
-                  phone: e.target.value
-                }
+                emergency_contact: { ...prev.emergency_contact, phone: e.target.value }
               }))}
-              placeholder="+1234567890"
+              className="field-input"
+              disabled={editingSection !== 'personal'}
             />
           </div>
         </div>
@@ -454,6 +435,7 @@ const PersonalInfoTab = ({ patientProfile, editingSection, setEditingSection, up
     </div>
   );
 };
+
 
 // Medical Information Tab
 const MedicalInfoTab = ({ patientProfile, editingSection, setEditingSection, updateProfile }) => {
