@@ -238,6 +238,7 @@ import Telemedicine from "./pages/Telemedicine";
 import { Doctors, DoctorProfile } from "./pages/Doctors";
 import Favorites from "./pages/Favorites";
 import PatientProfile from "./components/PatientProfile"; // <-- new patient profile page
+import PatientManagement from './components/PatientManagement';
 
 // Context Providers
 import { ToastProvider, useToast } from "./context/ToastContext";
@@ -410,6 +411,7 @@ function App() {
             path="*"
             element={<Navigate to={user ? "/dashboard" : "/login"} />}
           />
+          <Route path="/patients" element={user ? <PatientManagement /> : <Navigate to="/login" />} />
         </Routes>
       </div>
     </div>

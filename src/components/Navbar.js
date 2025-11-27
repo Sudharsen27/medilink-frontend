@@ -1566,7 +1566,8 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
         d="M19 9l-7 7-7-7" />
     </svg>
-  ),  PatientProfile: () => (
+  ), 
+   PatientProfile: () => (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path
         strokeLinecap="round"
@@ -1579,6 +1580,21 @@ const Icons = {
         strokeLinejoin="round"
         strokeWidth={2}
         d="M4 21v-1c0-3.314 3.582-6 8-6s8 2.686 8 6v1"
+      />
+    </svg>
+  ),
+  Patients: () => (
+    <svg
+      className="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M17 20v-2a4 4 0 00-3-3.87M9 14.13A4 4 0 006 18v2m12-6a4 4 0 10-8 0 4 4 0 008 0zm-6-7a4 4 0 11-8 0 4 4 0 018 0z"
       />
     </svg>
   ),
@@ -1776,21 +1792,41 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
                       </div>
 
                       <Link to="/profile"
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 dark:hover:bg-gray-700">
-                        <Icons.User />
+                        className="flex items-center gap-3 px-4 py-2.5 border-l-4 border-transparent 
+               hover:border-green-500 transition-all duration-200 
+               hover:bg-green-50 dark:hover:bg-gray-700">
+                        <Icons.User  className="w-5 h-5 text-green-600 dark:text-green-400"/>
                         My Profile
                       </Link>
      <Link
   to="/patient-profile"
-  className="flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 dark:hover:bg-gray-700"
+  className="flex items-center gap-3 px-4 py-2.5 border-l-4 border-transparent 
+               hover:border-green-500 transition-all duration-200 
+               hover:bg-green-50 dark:hover:bg-gray-700"
 >
-  <Icons.PatientProfile />
-  Patient Profile
+  <Icons.PatientProfile className="w-5 h-5 text-green-600 dark:text-green-400" />
+  <span className="font-medium">Patient Profile</span>
 </Link>
+<li>
+  <Link
+    to="/patients"
+    className="flex items-center gap-3 px-4 py-2.5 border-l-4 border-transparent 
+               hover:border-green-500 transition-all duration-200 
+               hover:bg-green-50 dark:hover:bg-gray-700"
+  >
+    <Icons.Patients className="w-5 h-5 text-green-600 dark:text-green-400" />
+    <span className="font-medium">Patient Management</span>
+  </Link>
+</li>
+
+
+
 
 
                       <Link to="/settings"
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 dark:hover:bg-gray-700">
+                        className="flex items-center gap-3 px-4 py-2.5 border-l-4 border-transparent 
+               hover:border-green-500 transition-all duration-200 
+               hover:bg-green-50 dark:hover:bg-gray-700">
                         <Icons.Settings />
                         Settings
                       </Link>
