@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useMemo } from 'react';
+import React, { createContext, useState, useContext, } from 'react';
 import { useToast } from './ToastContext';
 
 const SearchContext = createContext();

@@ -1,45 +1,72 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useCallback } from 'react';
 import { useEmergency } from '../context/EmergencyContext';
 import LoadingSpinner from './LoadingSpinner';
 import './EmergencyDashboard.css';
 
 const EmergencyDashboard = ({ user }) => {
-  const {
-    emergencyContacts,
-    medicalInfo,
-    emergencyMode,
-    currentLocation,
-    emergencyServices,
-    loading,
-    countdown,
-    countdownActive,
-    startEmergencyCountdown,
-    cancelEmergency,
-    triggerEmergency,
-    connectEmergencyDoctor,
-    dispatchAmbulance,
-    updateMedicalInfo,
-    updateEmergencyContacts,
-    getNearbyHospitals
-  } = useEmergency();
+  const emergency = useEmergency();
 
-  const [activeTab, setActiveTab] = useState('sos');
+  /* ======================
+     SAFE CONTEXT ACCESS
+  ====================== */
+  const {
+    emergencyContacts = [],
+    medicalInfo = {},
+    emergencyMode = false,
+    currentLocation = null,
+    emergencyServices = [],
+    loading = false,
+    countdown = 0,
+    countdownActive = false,
+    startEmergencyCountdown = () => {},
+    cancelEmergency = () => {},
+    getNearbyHospitals = async () => [],
+  } = emergency;
+
+  // ✅ SAFE FUNCTION FALLBACKS (VERY IMPORTANT)
+  const connectEmergencyDoctor =
+    emergency.connectEmergencyDoctor ??
+    (() => alert("Emergency doctor service not available yet"));
+
+  const dispatchAmbulance =
+    emergency.dispatchAmbulance ??
+    (() => {
+      alert("Calling ambulance directly");
+      window.location.href = "tel:108";
+    });
+
+  const updateMedicalInfo =
+    emergency.updateMedicalInfo ??
+    (async () => {
+      alert("Medical info update not connected");
+    });
+
+  const updateEmergencyContacts =
+    emergency.updateEmergencyContacts ??
+    (async () => {
+      alert("Emergency contacts update not connected");
+    });
+
+
+   const [activeTab, setActiveTab] = useState("sos");
   const [showMedicalInfoModal, setShowMedicalInfoModal] = useState(false);
   const [showContactsModal, setShowContactsModal] = useState(false);
   const [nearbyHospitals, setNearbyHospitals] = useState([]);
   const [editingMedicalInfo, setEditingMedicalInfo] = useState(false);
   const [medicalInfoForm, setMedicalInfoForm] = useState(medicalInfo || {});
 
-  useEffect(() => {
-    if (currentLocation) {
-      loadNearbyHospitals();
-    }
-  }, [currentLocation]);
+const loadNearbyHospitals = useCallback(async () => {
+  const hospitals = await getNearbyHospitals();
+  setNearbyHospitals(hospitals);
+}, [getNearbyHospitals]);
 
-  const loadNearbyHospitals = async () => {
-    const hospitals = await getNearbyHospitals();
-    setNearbyHospitals(hospitals);
-  };
+useEffect(() => {
+  if (currentLocation) {
+    loadNearbyHospitals();
+  }
+}, [currentLocation, loadNearbyHospitals]);
+
+
 
   if (loading) {
     return (
