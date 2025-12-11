@@ -145,7 +145,11 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   // 🔍 DEBUG: Log when navbar renders
-  console.log('🎯 NAVBAR: Component rendering with user:', user?.name);
+  // console.log('🎯 NAVBAR: Component rendering with user:', user?.name);
+  useEffect(() => {
+  console.log("NAVBAR rendered with user:", user);
+}, [user]);
+
 
   useEffect(() => {
     const handleScroll = () => {
