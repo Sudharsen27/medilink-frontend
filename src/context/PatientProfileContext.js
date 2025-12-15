@@ -273,6 +273,281 @@
 // };
 
 
+// import React, {
+//   createContext,
+//   useState,
+//   useContext,
+//   useEffect,
+//   useCallback,
+// } from "react";
+
+// import { useToast } from "./ToastContext";
+
+// const PatientProfileContext = createContext();
+
+// export const usePatientProfile = () => {
+//   const context = useContext(PatientProfileContext);
+//   if (!context) {
+//     throw new Error(
+//       "usePatientProfile must be used within a PatientProfileProvider"
+//     );
+//   }
+//   return context;
+// };
+
+// // ✅ BACKEND BASE URL FIX (Stops 403 Errors)
+// const BASE_URL = "http://localhost:3000";
+
+// export const PatientProfileProvider = ({ children }) => {
+//   const [patientProfile, setPatientProfile] = useState(null);
+//   const [healthMetrics, setHealthMetrics] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const { addToast } = useToast();
+
+//   // ----------------------------------------------------
+//   // 🔄 Fetch Patient Profile
+//   // ----------------------------------------------------
+//   const fetchPatientProfile = useCallback(async () => {
+//     try {
+//       setLoading(true);
+//       const token = localStorage.getItem("token");
+
+//       if (!token) {
+//         console.warn("⚠ No token found");
+//         return;
+//       }
+
+//       const response = await fetch(`${BASE_URL}/api/patient/profile`, {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           "Content-Type": "application/json",
+//         },
+//       });
+
+//       if (response.ok) {
+//         const data = await response.json();
+//         setPatientProfile(data.data || data);
+//       } else {
+//         throw new Error("Failed to fetch patient profile");
+//       }
+//     } catch (error) {
+//       console.error("Error fetching patient profile:", error);
+//       setPatientProfile(getFallbackProfile());
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, []);
+
+//   // ----------------------------------------------------
+//   // 🔄 Fetch Health Metrics
+//   // ----------------------------------------------------
+//   const fetchHealthMetrics = useCallback(async () => {
+//     try {
+//       const token = localStorage.getItem("token");
+
+//       if (!token) return;
+
+//       const response = await fetch(`${BASE_URL}/api/patient/health-metrics`, {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           "Content-Type": "application/json",
+//         },
+//       });
+
+//       if (response.ok) {
+//         const data = await response.json();
+//         setHealthMetrics(data.data || data.metrics || []);
+//       }
+//     } catch (error) {
+//       console.error("Error fetching health metrics:", error);
+//     }
+//   }, []);
+
+//   // ----------------------------------------------------
+//   // Load on mount
+//   // ----------------------------------------------------
+//   useEffect(() => {
+//     fetchPatientProfile();
+//     fetchHealthMetrics();
+//   }, [fetchPatientProfile, fetchHealthMetrics]);
+
+//   // ----------------------------------------------------
+//   // Fallback profile (when API fails)
+//   // ----------------------------------------------------
+//   const getFallbackProfile = () => ({
+//     personal_info: {
+//       full_name: "",
+//       date_of_birth: "",
+//       gender: "",
+//       blood_type: "",
+//       height: null,
+//       weight: null,
+//       emergency_contact: null,
+//     },
+//     medical_history: {
+//       conditions: [],
+//       allergies: [],
+//       medications: [],
+//       surgeries: [],
+//     },
+//     insurance_info: {
+//       provider: "",
+//       policy_number: "",
+//       group_number: "",
+//     },
+//     preferences: {
+//       language: "en",
+//       notifications: true,
+//       theme: "system",
+//     },
+//   });
+
+//   // ----------------------------------------------------
+//   // ✏️ Update Profile
+//   // ----------------------------------------------------
+//   const updateProfile = useCallback(
+//     async (profileData) => {
+//       try {
+//         const token = localStorage.getItem("token");
+
+//         const response = await fetch(`${BASE_URL}/api/patient/profile`, {
+//           method: "PUT",
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//             "Content-Type": "application/json",
+//           },
+//           body: JSON.stringify(profileData),
+//         });
+
+//         if (response.ok) {
+//           const updatedProfile = await response.json();
+//           setPatientProfile(updatedProfile.data || updatedProfile);
+//           addToast("Profile updated successfully", "success");
+//           return updatedProfile;
+//         } else {
+//           throw new Error("Failed to update profile");
+//         }
+//       } catch (error) {
+//         console.error("Error updating profile:", error);
+//         addToast("Failed to update profile", "error");
+//         throw error;
+//       }
+//     },
+//     [addToast]
+//   );
+
+//   // ----------------------------------------------------
+//   // ➕ Add Health Metric
+//   // ----------------------------------------------------
+//   const addHealthMetric = useCallback(
+//     async (metricData) => {
+//       try {
+//         const token = localStorage.getItem("token");
+
+//         const response = await fetch(`${BASE_URL}/api/patient/health-metrics`, {
+//           method: "POST",
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//             "Content-Type": "application/json",
+//           },
+//           body: JSON.stringify(metricData),
+//         });
+
+//         if (response.ok) {
+//           const newMetric = await response.json();
+//           setHealthMetrics((prev) => [newMetric.data || newMetric, ...prev]);
+//           addToast("Health metric added successfully", "success");
+//           return newMetric;
+//         } else {
+//           throw new Error("Failed to add health metric");
+//         }
+//       } catch (error) {
+//         console.error("Error adding metric:", error);
+//         addToast("Failed to add health metric", "error");
+//         throw error;
+//       }
+//     },
+//     [addToast]
+//   );
+
+//   // ----------------------------------------------------
+//   // Helper Functions
+//   // ----------------------------------------------------
+//   const getBMI = () => {
+//     const h = patientProfile?.personal_info?.height;
+//     const w = patientProfile?.personal_info?.weight;
+//     if (!h || !w) return null;
+
+//     const meters = h / 100;
+//     return (w / (meters * meters)).toFixed(1);
+//   };
+
+//   const getBMICategory = (bmi) => {
+//     if (!bmi) return null;
+//     if (bmi < 18.5) return { category: "Underweight", color: "yellow" };
+//     if (bmi < 25) return { category: "Normal", color: "green" };
+//     if (bmi < 30) return { category: "Overweight", color: "orange" };
+//     return { category: "Obese", color: "red" };
+//   };
+
+//   const getAge = () => {
+//     const dob = patientProfile?.personal_info?.date_of_birth;
+//     if (!dob) return null;
+
+//     const birth = new Date(dob);
+//     const today = new Date();
+
+//     let age = today.getFullYear() - birth.getFullYear();
+//     const diff = today.getMonth() - birth.getMonth();
+
+//     if (diff < 0 || (diff === 0 && today.getDate() < birth.getDate())) {
+//       age--;
+//     }
+
+//     return age;
+//   };
+
+//   const getRecentMetrics = (type, limit = 5) =>
+//     healthMetrics
+//       .filter((m) => m.metric_type === type)
+//       .sort((a, b) => new Date(b.recorded_at) - new Date(a.recorded_at))
+//       .slice(0, limit);
+
+//   const getMetricTrend = (type) => {
+//     const metrics = getRecentMetrics(type, 10);
+//     if (metrics.length < 2) return "stable";
+
+//     const values = metrics.map((m) => m.value);
+//     if (values[values.length - 1] > values[0] * 1.05) return "increasing";
+//     if (values[values.length - 1] < values[0] * 0.95) return "decreasing";
+//     return "stable";
+//   };
+
+//   // ----------------------------------------------------
+//   // Provided Values
+//   // ----------------------------------------------------
+//   const value = {
+//     patientProfile,
+//     healthMetrics,
+//     loading,
+//     fetchPatientProfile,
+//     updateProfile,
+//     addHealthMetric,
+//     getBMI,
+//     getBMICategory,
+//     getAge,
+//     getRecentMetrics,
+//     getMetricTrend,
+//   };
+
+//   return (
+//     <PatientProfileContext.Provider value={value}>
+//       {children}
+//     </PatientProfileContext.Provider>
+//   );
+// };
+
+
 import React, {
   createContext,
   useState,
@@ -288,15 +563,13 @@ const PatientProfileContext = createContext();
 export const usePatientProfile = () => {
   const context = useContext(PatientProfileContext);
   if (!context) {
-    throw new Error(
-      "usePatientProfile must be used within a PatientProfileProvider"
-    );
+    throw new Error("usePatientProfile must be used within a Provider");
   }
   return context;
 };
 
-// ✅ BACKEND BASE URL FIX (Stops 403 Errors)
-const BASE_URL = "http://localhost:3000";
+// ✅ FIX: Correct backend port
+const BASE_URL = "http://localhost:5000";
 
 export const PatientProfileProvider = ({ children }) => {
   const [patientProfile, setPatientProfile] = useState(null);
@@ -305,17 +578,19 @@ export const PatientProfileProvider = ({ children }) => {
   const { addToast } = useToast();
 
   // ----------------------------------------------------
-  // 🔄 Fetch Patient Profile
+  // Fetch Patient Profile
   // ----------------------------------------------------
   const fetchPatientProfile = useCallback(async () => {
+    const token = localStorage.getItem("token");
+
+    // 🚫 FIX: Do NOT fetch if no token
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        console.warn("⚠ No token found");
-        return;
-      }
 
       const response = await fetch(`${BASE_URL}/api/patient/profile`, {
         headers: {
@@ -324,29 +599,26 @@ export const PatientProfileProvider = ({ children }) => {
         },
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
         setPatientProfile(data.data || data);
-      } else {
-        throw new Error("Failed to fetch patient profile");
       }
     } catch (error) {
-      console.error("Error fetching patient profile:", error);
-      setPatientProfile(getFallbackProfile());
+      console.error("Profile load error:", error);
     } finally {
       setLoading(false);
     }
   }, []);
 
   // ----------------------------------------------------
-  // 🔄 Fetch Health Metrics
+  // Fetch Health Metrics
   // ----------------------------------------------------
   const fetchHealthMetrics = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
     try {
-      const token = localStorage.getItem("token");
-
-      if (!token) return;
-
       const response = await fetch(`${BASE_URL}/api/patient/health-metrics`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -354,62 +626,39 @@ export const PatientProfileProvider = ({ children }) => {
         },
       });
 
+      const data = await response.json();
       if (response.ok) {
-        const data = await response.json();
         setHealthMetrics(data.data || data.metrics || []);
       }
     } catch (error) {
-      console.error("Error fetching health metrics:", error);
+      console.error("Health metrics error:", error);
     }
   }, []);
 
   // ----------------------------------------------------
-  // Load on mount
+  // Load data WHEN token exists
   // ----------------------------------------------------
-  useEffect(() => {
+ useEffect(() => {
+  const token = localStorage.getItem("token");
+
+  if (token) {
     fetchPatientProfile();
     fetchHealthMetrics();
-  }, [fetchPatientProfile, fetchHealthMetrics]);
+  } else {
+    setLoading(false);
+  }
+}, [fetchPatientProfile, fetchHealthMetrics]);
+
 
   // ----------------------------------------------------
-  // Fallback profile (when API fails)
-  // ----------------------------------------------------
-  const getFallbackProfile = () => ({
-    personal_info: {
-      full_name: "",
-      date_of_birth: "",
-      gender: "",
-      blood_type: "",
-      height: null,
-      weight: null,
-      emergency_contact: null,
-    },
-    medical_history: {
-      conditions: [],
-      allergies: [],
-      medications: [],
-      surgeries: [],
-    },
-    insurance_info: {
-      provider: "",
-      policy_number: "",
-      group_number: "",
-    },
-    preferences: {
-      language: "en",
-      notifications: true,
-      theme: "system",
-    },
-  });
-
-  // ----------------------------------------------------
-  // ✏️ Update Profile
+  // Update Profile
   // ----------------------------------------------------
   const updateProfile = useCallback(
     async (profileData) => {
-      try {
-        const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
+      try {
         const response = await fetch(`${BASE_URL}/api/patient/profile`, {
           method: "PUT",
           headers: {
@@ -419,31 +668,29 @@ export const PatientProfileProvider = ({ children }) => {
           body: JSON.stringify(profileData),
         });
 
+        const updated = await response.json();
+
         if (response.ok) {
-          const updatedProfile = await response.json();
-          setPatientProfile(updatedProfile.data || updatedProfile);
+          setPatientProfile(updated.data || updated);
           addToast("Profile updated successfully", "success");
-          return updatedProfile;
-        } else {
-          throw new Error("Failed to update profile");
         }
       } catch (error) {
-        console.error("Error updating profile:", error);
+        console.error("Update error:", error);
         addToast("Failed to update profile", "error");
-        throw error;
       }
     },
     [addToast]
   );
 
   // ----------------------------------------------------
-  // ➕ Add Health Metric
+  // Add Health Metric
   // ----------------------------------------------------
   const addHealthMetric = useCallback(
     async (metricData) => {
-      try {
-        const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
+      try {
         const response = await fetch(`${BASE_URL}/api/patient/health-metrics`, {
           method: "POST",
           headers: {
@@ -453,18 +700,15 @@ export const PatientProfileProvider = ({ children }) => {
           body: JSON.stringify(metricData),
         });
 
+        const newMetric = await response.json();
+
         if (response.ok) {
-          const newMetric = await response.json();
           setHealthMetrics((prev) => [newMetric.data || newMetric, ...prev]);
           addToast("Health metric added successfully", "success");
-          return newMetric;
-        } else {
-          throw new Error("Failed to add health metric");
         }
       } catch (error) {
-        console.error("Error adding metric:", error);
+        console.error("Add metric error:", error);
         addToast("Failed to add health metric", "error");
-        throw error;
       }
     },
     [addToast]
@@ -476,6 +720,7 @@ export const PatientProfileProvider = ({ children }) => {
   const getBMI = () => {
     const h = patientProfile?.personal_info?.height;
     const w = patientProfile?.personal_info?.weight;
+
     if (!h || !w) return null;
 
     const meters = h / 100;
@@ -523,25 +768,22 @@ export const PatientProfileProvider = ({ children }) => {
     return "stable";
   };
 
-  // ----------------------------------------------------
-  // Provided Values
-  // ----------------------------------------------------
-  const value = {
-    patientProfile,
-    healthMetrics,
-    loading,
-    fetchPatientProfile,
-    updateProfile,
-    addHealthMetric,
-    getBMI,
-    getBMICategory,
-    getAge,
-    getRecentMetrics,
-    getMetricTrend,
-  };
-
   return (
-    <PatientProfileContext.Provider value={value}>
+    <PatientProfileContext.Provider
+      value={{
+        patientProfile,
+        healthMetrics,
+        loading,
+        fetchPatientProfile,
+        updateProfile,
+        addHealthMetric,
+        getBMI,
+        getBMICategory,
+        getAge,
+        getRecentMetrics,
+        getMetricTrend,
+      }}
+    >
       {children}
     </PatientProfileContext.Provider>
   );

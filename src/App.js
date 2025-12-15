@@ -560,10 +560,21 @@ function App() {
             element={user ? <Navigate to="/dashboard" /> : <Login onLogin={handleLogin} />}
           />
 
-          <Route
+          {/* <Route
             path="/register"
             element={user ? <Navigate to="/dashboard" /> : <Register />}
-          />
+          /> */}
+          <Route
+  path="/register"
+  element={
+    user ? (
+      <Navigate to="/dashboard" />
+    ) : (
+      <Register onSuccess={() => navigate("/login")} />
+    )
+  }
+/>
+
 
           {/* Protected */}
           <Route
