@@ -133,7 +133,29 @@ const Icons = {
       />
     </svg>
   ),
+    Caregivers: () => (
+    <svg
+      className="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6 20v-2a6 6 0 0112 0v2"
+      />
+    </svg>
+  ),
+
 };
+
 
 const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
   const location = useLocation();
@@ -357,7 +379,15 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
     <span className="font-medium">Patient Management</span>
   </Link>
 </li>
-
+<Link
+  to="/caregivers"
+  className="flex items-center gap-3 px-4 py-2.5 border-l-4 border-transparent 
+             hover:border-green-500 transition-all duration-200 
+             hover:bg-green-50 dark:hover:bg-gray-700"
+>
+  <Icons.Caregivers className="w-5 h-5 text-green-600 dark:text-green-400" />
+  <span className="font-medium">Caregiver Mode</span>
+</Link>
 
 
 

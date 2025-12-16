@@ -467,6 +467,8 @@ import Telemedicine from "./pages/Telemedicine";
 import { Doctors, DoctorProfile } from "./pages/Doctors";
 import Favorites from "./pages/Favorites";
 import EmergencyDashboard from './components/EmergencyDashboard';
+import Caregivers from "./pages/Caregivers";
+
 
 // Context Providers
 import { ToastProvider, useToast } from "./context/ToastContext";
@@ -479,6 +481,7 @@ import { PatientProfileProvider } from "./context/PatientProfileContext";
 import { DashboardProvider } from "./context/DashboardContext";
 import { EnhancedNotificationsProvider } from "./context/EnhancedNotificationsContext";
 import { EmergencyProvider } from "./context/EmergencyContext";
+import { CaregiverProvider } from "./context/CaregiverContext";
 
 // Hooks
 import useAutoLogout from "./hooks/useAutoLogout";
@@ -657,6 +660,11 @@ function App() {
             path="*"
             element={<Navigate to={user ? "/dashboard" : "/login"} />}
           />
+          <Route
+  path="/caregivers"
+  element={user ? <Caregivers /> : <Navigate to="/login" />}
+/>
+
         </Routes>
       </div>
     </div>
@@ -678,7 +686,9 @@ export default function AppWrapper() {
                   <SearchProvider>
                     <PatientProfileProvider>
                       <EmergencyProvider>
+                        <CaregiverProvider> 
                         <App />
+                        </CaregiverProvider>
                       </EmergencyProvider>
                     </PatientProfileProvider>
                   </SearchProvider>
