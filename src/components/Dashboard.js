@@ -1,7 +1,7 @@
 
 
 // components/Dashboard.js
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '../context/ToastContext';
 import AppointmentForm from './AppointmentForm';
 import AppointmentList from './AppointmentList';
@@ -16,8 +16,10 @@ import StatsCard from './StatsCard';
 import QuickActions from './QuickActions';
 import RecentAppointments from './RecentAppointments';
 import HealthCheck from './HealthCheck';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = ({ user, onLogout }) => {
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
@@ -263,12 +265,16 @@ const Dashboard = ({ user, onLogout }) => {
               
               {user?.role === 'admin' && (
                 <button
-                  onClick={loadAppointments}
-                  disabled={loading}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                >
-                  {loading ? 'Loading...' : 'View All Appointments'}
-                </button>
+  onClick={() => {
+    loadAppointments();
+    navigate('/appointments');
+  }}
+  disabled={loading}
+  className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+>
+  {loading ? 'Loading...' : 'View All Appointments'}
+</button>
+
               )}
             </div>
           </div>
