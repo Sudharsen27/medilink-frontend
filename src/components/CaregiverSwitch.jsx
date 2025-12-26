@@ -1,44 +1,4 @@
-// import { useCaregiver } from "../context/CaregiverContext";
 
-// import Avatar from "./Avatar";
-
-
-// export default function CaregiverSwitch({ dependents }) {
-//   const { activePerson, setActivePerson } = useCaregiver();
-
-//   return (
-//     <div className="flex gap-3 mb-6 overflow-x-auto">
-//       <button
-//         onClick={() => setActivePerson({ type: "self", id: null, name: "Myself" })}
-//         className={`flex items-center gap-2 px-4 py-2 rounded ${
-//           activePerson.type === "self"
-//             ? "bg-blue-600 text-white"
-//             : "bg-gray-100"
-//         }`}
-//       >
-//         <Avatar name="Myself" size={30} />
-//         Myself
-//       </button>
-
-//       {dependents.map((d) => (
-//         <button
-//           key={d.id}
-//           onClick={() =>
-//             setActivePerson({ type: "dependent", id: d.id, name: d.name })
-//           }
-//           className={`flex items-center gap-2 px-4 py-2 rounded ${
-//             activePerson.id === d.id
-//               ? "bg-blue-600 text-white"
-//               : "bg-gray-100"
-//           }`}
-//         >
-//           <Avatar name={d.name} size={30} />
-//           {d.name}
-//         </button>
-//       ))}
-//     </div>
-//   );
-// }
 
 import { useCaregiver } from "../context/CaregiverContext";
 import Avatar from "./Avatar";
