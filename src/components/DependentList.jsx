@@ -1,27 +1,4 @@
-// import Avatar from "./Avatar";
 
-
-// export default function DependentList({ dependents }) {
-//   if (!dependents.length) {
-//     return <p className="text-gray-500">No family members added.</p>;
-//   }
-
-//   return (
-//     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//       {dependents.map((d) => (
-//         <div key={d.id} className="border rounded p-4 flex gap-3 items-center">
-//           <Avatar name={d.name} />
-//           <div>
-//             <p className="font-semibold">{d.name}</p>
-//             <p className="text-sm text-gray-600">
-//               {d.relationship} • Age {d.age}
-//             </p>
-//           </div>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// }
 
 import { motion, AnimatePresence } from "framer-motion";
 import Avatar from "./Avatar";
