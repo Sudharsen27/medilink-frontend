@@ -194,6 +194,224 @@
 // }
 
 
+// import React, { useState } from "react";
+// import {
+//   deleteAppointment,
+//   updateAppointmentStatus,
+//   updateAppointment, // ✅ RESCHEDULE API
+// } from "../api/appointments";
+
+// const STATUS_CLASSES = {
+//   pending: "bg-yellow-100 text-yellow-700",
+//   confirmed: "bg-green-100 text-green-700",
+//   completed: "bg-purple-100 text-purple-700",
+//   cancelled: "bg-red-100 text-red-700",
+// };
+
+// export default function AppointmentList({ appointments, onUpdate }) {
+//   const [loadingId, setLoadingId] = useState(null);
+
+//   // 🔁 Reschedule state
+//   const [showReschedule, setShowReschedule] = useState(false);
+//   const [selectedApp, setSelectedApp] = useState(null);
+//   const [newDate, setNewDate] = useState("");
+//   const [newTime, setNewTime] = useState("");
+
+//   const handleDelete = async (id) => {
+//     if (!window.confirm("Delete this appointment?")) return;
+
+//     try {
+//       setLoadingId(id);
+//       await deleteAppointment(id);
+//       onUpdate();
+//     } catch (err) {
+//       console.error("Delete failed", err);
+//       alert("Failed to delete appointment");
+//     } finally {
+//       setLoadingId(null);
+//     }
+//   };
+
+//   const handleStatusChange = async (id, status) => {
+//     try {
+//       setLoadingId(id);
+//       await updateAppointmentStatus(id, status);
+//       onUpdate();
+//     } catch (err) {
+//       console.error("Status update failed", err);
+//       alert("Failed to update status");
+//     } finally {
+//       setLoadingId(null);
+//     }
+//   };
+
+//   // 🔁 RESCHEDULE HANDLER
+//   const handleReschedule = async () => {
+//     if (!newDate || !newTime) {
+//       alert("Please select date and time");
+//       return;
+//     }
+
+//     try {
+//       setLoadingId(selectedApp.id);
+
+//       await updateAppointment(selectedApp.id, {
+//         date: newDate,
+//         time: newTime,
+//       });
+
+//       setShowReschedule(false);
+//       setSelectedApp(null);
+//       onUpdate();
+//     } catch (err) {
+//       console.error("Reschedule failed", err);
+//       alert("Failed to reschedule appointment");
+//     } finally {
+//       setLoadingId(null);
+//     }
+//   };
+
+//   // EMPTY STATE
+//   if (!appointments || appointments.length === 0) {
+//     return (
+//       <div className="py-12 text-center text-gray-500">
+//         📭 No appointments found
+//         <p className="text-sm mt-1">
+//           Try adjusting filters or creating a new appointment
+//         </p>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="overflow-x-auto">
+//       <h3 className="text-lg font-semibold mb-4">All Appointments</h3>
+
+//       {/* TABLE HEADER */}
+//       <div className="grid grid-cols-6 gap-4 px-4 py-2 bg-gray-100 text-sm font-semibold text-gray-700 rounded-t">
+//         <div>Patient</div>
+//         <div>Email</div>
+//         <div>Date</div>
+//         <div>Status</div>
+//         <div className="col-span-2 text-center">Actions</div>
+//       </div>
+
+//       {/* TABLE ROWS */}
+//       {appointments.map((app) => (
+//         <div
+//           key={app.id}
+//           className={`grid grid-cols-6 gap-4 px-4 py-3 border-b items-center hover:bg-gray-50 transition
+//             ${app.status === "cancelled" ? "opacity-60" : ""}
+//           `}
+//         >
+//           {/* Patient */}
+//           <div className="font-medium">{app.name}</div>
+
+//           {/* Email */}
+//           <div className="text-sm text-gray-600 truncate">{app.email}</div>
+
+//           {/* Date */}
+//           <div className="text-sm">
+//             {new Date(app.date).toLocaleDateString()}
+//           </div>
+
+//           {/* STATUS DROPDOWN */}
+//           <div>
+//             <select
+//               disabled={loadingId === app.id}
+//               value={app.status}
+//               onChange={(e) =>
+//                 handleStatusChange(app.id, e.target.value)
+//               }
+//               className={`text-xs px-2 py-1 rounded border cursor-pointer ${STATUS_CLASSES[app.status]}`}
+//             >
+//               <option value="pending">Pending</option>
+//               <option value="confirmed">Confirmed</option>
+//               <option value="completed">Completed</option>
+//               <option value="cancelled">Cancelled</option>
+//             </select>
+//           </div>
+
+//           {/* ACTION BUTTONS */}
+//           <div className="col-span-2 flex gap-2 justify-center">
+//             <button
+//               disabled={loadingId === app.id}
+//               onClick={() => handleStatusChange(app.id, "confirmed")}
+//               className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+//             >
+//               Confirm
+//             </button>
+
+//             <button
+//               disabled={loadingId === app.id}
+//               onClick={() => {
+//                 setSelectedApp(app);
+//                 setNewDate(app.date.split("T")[0]);
+//                 setNewTime(app.time);
+//                 setShowReschedule(true);
+//               }}
+//               className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+//             >
+//               Reschedule
+//             </button>
+
+//             <button
+//               disabled={loadingId === app.id}
+//               onClick={() => handleDelete(app.id)}
+//               className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+//             >
+//               Delete
+//             </button>
+//           </div>
+//         </div>
+//       ))}
+
+//       {/* 🔁 RESCHEDULE MODAL */}
+//       {showReschedule && (
+//         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+//           <div className="bg-white rounded-lg p-6 w-96">
+//             <h3 className="text-lg font-semibold mb-4">
+//               Reschedule Appointment
+//             </h3>
+
+//             <label className="block mb-2 text-sm">New Date</label>
+//             <input
+//               type="date"
+//               value={newDate}
+//               onChange={(e) => setNewDate(e.target.value)}
+//               className="w-full border px-3 py-2 rounded mb-3"
+//             />
+
+//             <label className="block mb-2 text-sm">New Time</label>
+//             <input
+//               type="time"
+//               value={newTime}
+//               onChange={(e) => setNewTime(e.target.value)}
+//               className="w-full border px-3 py-2 rounded mb-4"
+//             />
+
+//             <div className="flex justify-end gap-2">
+//               <button
+//                 onClick={() => setShowReschedule(false)}
+//                 className="px-3 py-1 text-sm bg-gray-300 rounded"
+//               >
+//                 Cancel
+//               </button>
+//               <button
+//                 onClick={handleReschedule}
+//                 className="px-3 py-1 text-sm bg-blue-600 text-white rounded"
+//               >
+//                 Save
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+
 import React, { useState } from "react";
 import {
   deleteAppointment,
@@ -201,8 +419,13 @@ import {
   updateAppointment, // ✅ RESCHEDULE API
 } from "../api/appointments";
 
+/**
+ * ✅ SUPPORT ALL BACKEND STATUSES
+ */
 const STATUS_CLASSES = {
+  scheduled: "bg-yellow-100 text-yellow-700",
   pending: "bg-yellow-100 text-yellow-700",
+  reschedule_requested: "bg-yellow-100 text-yellow-700",
   confirmed: "bg-green-100 text-green-700",
   completed: "bg-purple-100 text-purple-700",
   cancelled: "bg-red-100 text-red-700",
@@ -217,6 +440,7 @@ export default function AppointmentList({ appointments, onUpdate }) {
   const [newDate, setNewDate] = useState("");
   const [newTime, setNewTime] = useState("");
 
+  // 🗑️ DELETE
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this appointment?")) return;
 
@@ -232,6 +456,7 @@ export default function AppointmentList({ appointments, onUpdate }) {
     }
   };
 
+  // 🔄 STATUS CHANGE
   const handleStatusChange = async (id, status) => {
     try {
       setLoadingId(id);
@@ -245,7 +470,7 @@ export default function AppointmentList({ appointments, onUpdate }) {
     }
   };
 
-  // 🔁 RESCHEDULE HANDLER
+  // 🔁 RESCHEDULE
   const handleReschedule = async () => {
     if (!newDate || !newTime) {
       alert("Please select date and time");
@@ -271,7 +496,7 @@ export default function AppointmentList({ appointments, onUpdate }) {
     }
   };
 
-  // EMPTY STATE
+  // 📭 EMPTY STATE
   if (!appointments || appointments.length === 0) {
     return (
       <div className="py-12 text-center text-gray-500">
@@ -323,9 +548,15 @@ export default function AppointmentList({ appointments, onUpdate }) {
               onChange={(e) =>
                 handleStatusChange(app.id, e.target.value)
               }
-              className={`text-xs px-2 py-1 rounded border cursor-pointer ${STATUS_CLASSES[app.status]}`}
+              className={`text-xs px-2 py-1 rounded border cursor-pointer ${
+                STATUS_CLASSES[app.status] || "bg-gray-100 text-gray-600"
+              }`}
             >
+              <option value="scheduled">Scheduled</option>
               <option value="pending">Pending</option>
+              <option value="reschedule_requested">
+                Reschedule Requested
+              </option>
               <option value="confirmed">Confirmed</option>
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
@@ -336,7 +567,9 @@ export default function AppointmentList({ appointments, onUpdate }) {
           <div className="col-span-2 flex gap-2 justify-center">
             <button
               disabled={loadingId === app.id}
-              onClick={() => handleStatusChange(app.id, "confirmed")}
+              onClick={() =>
+                handleStatusChange(app.id, "confirmed")
+              }
               className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
             >
               Confirm
