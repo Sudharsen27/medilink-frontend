@@ -332,10 +332,25 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
                     className="flex items-center gap-2 bg-white/15 hover:bg-white/25
                       px-3 py-2 rounded-xl transition-all duration-300 backdrop-blur-sm border border-white/20"
                   >
-                    <div className="w-9 h-9 bg-gradient-to-br from-green-400 to-green-600
+                    {/* <div className="w-9 h-9 bg-gradient-to-br from-green-400 to-green-600
                       rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md">
                       {user.name?.charAt(0)?.toUpperCase() || "U"}
-                    </div>
+                    </div> */}
+                    <div className="w-9 h-9 rounded-lg overflow-hidden shadow-md bg-white/20">
+  {user.photo ? (
+    <img
+      src={`http://localhost:5000/uploads/${user.photo}`}
+      alt={user.name}
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center
+      bg-gradient-to-br from-green-400 to-green-600 text-white font-bold text-sm">
+      {user.name?.charAt(0)?.toUpperCase() || "U"}
+    </div>
+  )}
+</div>
+
                     <span className="text-white text-sm truncate max-w-[100px]">
                       {user.name}
                     </span>
@@ -441,10 +456,25 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
             {user && (
               <div className="bg-white/15 rounded-2xl p-4 border border-white/20">
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600
+                  {/* <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600
                     rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
                     {user.name?.charAt(0)?.toUpperCase() || "U"}
-                  </div>
+                  </div> */}
+                  <div className="w-14 h-14 rounded-xl overflow-hidden shadow-lg bg-white/20">
+  {user.photo ? (
+    <img
+      src={`http://localhost:5000/uploads/${user.photo}`}
+      alt={user.name}
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center
+      bg-gradient-to-br from-green-400 to-green-600 text-white font-bold text-xl">
+      {user.name?.charAt(0)?.toUpperCase() || "U"}
+    </div>
+  )}
+</div>
+
                   <div className="flex-1 min-w-0">
                     <p className="text-white font-semibold text-lg truncate">{user.name}</p>
                     <p className="text-green-100 text-sm truncate">{user.email}</p>
