@@ -339,7 +339,8 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
                     <div className="w-9 h-9 rounded-lg overflow-hidden shadow-md bg-white/20">
   {user.photo ? (
     <img
-      src={`http://localhost:5000/uploads/${user.photo}`}
+      // src={`http://localhost:5000/uploads/${user.photo}`}
+        src={user.photo}
       alt={user.name}
       className="w-full h-full object-cover"
     />
@@ -463,7 +464,8 @@ const Navbar = ({ user, onLogout, darkMode, setDarkMode }) => {
                   <div className="w-14 h-14 rounded-xl overflow-hidden shadow-lg bg-white/20">
   {user.photo ? (
     <img
-      src={`http://localhost:5000/uploads/${user.photo}`}
+      // src={`http://localhost:5000/uploads/${user.photo}`}
+        src={user.photo}
       alt={user.name}
       className="w-full h-full object-cover"
     />

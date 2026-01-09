@@ -438,7 +438,9 @@ export default function Profile({ user, setUser }) {
           phone: data.phone ?? ''
         });
         if (data.photo) {
-          setPreview(`${API_URL}/uploads/${data.photo}`);
+          // setPreview(`${API_URL}/uploads/${data.photo}`);
+          setPreview(data.photo); // Cloudinary URL already complete
+
         }
       })
       .catch((err) => {
@@ -525,10 +527,10 @@ export default function Profile({ user, setUser }) {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Profile Photo */}
-        <div className="flex flex-col items-center">
+        {/* <div className="flex flex-col items-center">
           {preview ? (
             <img
-              src={preview}
+              // src={preview}
               alt="Profile"
               className="w-24 h-24 rounded-full object-cover mb-3 shadow"
             />
@@ -543,7 +545,28 @@ export default function Profile({ user, setUser }) {
             onChange={handlePhotoChange}
             className="text-sm text-gray-600 dark:text-gray-300"
           />
-        </div>
+        </div> */}
+        <div className="flex flex-col items-center">
+  {preview ? (
+    <img
+      src={preview}
+      alt="Profile"
+      className="w-24 h-24 rounded-full object-cover mb-3 shadow"
+    />
+  ) : (
+    <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700
+      flex items-center justify-center mb-3">
+      <span className="text-gray-500 text-sm">No Photo</span>
+    </div>
+  )}
+  <input
+    type="file"
+    accept="image/*"
+    onChange={handlePhotoChange}
+    className="text-sm text-gray-600 dark:text-gray-300"
+  />
+</div>
+
 
         {/* Name */}
         <div>
