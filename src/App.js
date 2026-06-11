@@ -260,6 +260,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 
 /* ===================== COMPONENTS ===================== */
 import AppLayout from "./components/AppLayout";
@@ -437,6 +438,7 @@ export default function AppWrapper() {
                       <EmergencyProvider>
                         <CaregiverProvider>
                           <App />
+                          <Analytics />
                         </CaregiverProvider>
                       </EmergencyProvider>
                     </PatientProfileProvider>
