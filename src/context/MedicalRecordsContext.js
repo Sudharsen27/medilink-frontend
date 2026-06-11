@@ -3,8 +3,9 @@
 
 import { createContext, useContext, useState, useCallback } from "react";
 import axios from "axios";
+import { apiUrl } from "../config/api";
 
-const API = "/api/medical-records";
+const API = apiUrl("/api/medical-records");
 
 const MedicalRecordsContext = createContext();
 

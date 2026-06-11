@@ -153,6 +153,7 @@ import React, {
   useCallback,
   useRef,
 } from "react";
+import { API_BASE_URL } from "../config/api";
 
 const EnhancedNotificationsContext = createContext(null);
 
@@ -177,7 +178,7 @@ export const EnhancedNotificationsProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE = "http://localhost:5000";
+  const API_BASE = API_BASE_URL;
 
   // 🔔 Notification sound (loaded once)
   const soundRef = useRef(null);

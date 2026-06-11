@@ -2,6 +2,7 @@
 
 
 import { useState } from "react";
+import { apiUrl } from "../config/api";
 import { UserPlus, User, Calendar, Heart, Check, Loader2 } from "lucide-react";
 
 /* ---------------------------------
@@ -37,7 +38,7 @@ export default function DependentForm({ onSuccess }) {
     try {
       setLoading(true);
 
-      const res = await fetch("/api/dependents", {
+      const res = await fetch(apiUrl("/api/dependents"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

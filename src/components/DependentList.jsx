@@ -1,6 +1,7 @@
 
 
 import { motion, AnimatePresence } from "framer-motion";
+import { apiUrl } from "../config/api";
 import Avatar from "./Avatar";
 import { Trash2 } from "lucide-react";
 
@@ -74,7 +75,7 @@ async function handleDelete(id) {
   if (!window.confirm("Remove this family member?")) return;
 
   try {
-    await fetch(`/api/dependents/${id}`, {
+    await fetch(apiUrl(`/api/dependents/${id}`), {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,

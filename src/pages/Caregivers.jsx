@@ -37,7 +37,7 @@
 
 //   const loadDependents = async () => {
 //     try {
-//       const res = await fetch("/api/dependents", {
+//       const res = await fetch(apiUrl("/api/dependents"), {
 //         headers: {
 //           Authorization: `Bearer ${localStorage.getItem("token")}`,
 //         },
@@ -79,6 +79,7 @@
 // }
 
 import { useEffect, useState } from "react";
+import { apiUrl } from "../config/api";
 import CaregiverSwitch from "../components/CaregiverSwitch";
 import DependentForm from "../components/DependentForm";
 import DependentList from "../components/DependentList";
@@ -89,7 +90,7 @@ export default function Caregivers() {
 
   const loadDependents = async () => {
     try {
-      const res = await fetch("/api/dependents", {
+      const res = await fetch(apiUrl("/api/dependents"), {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },

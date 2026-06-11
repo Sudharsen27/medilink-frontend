@@ -486,6 +486,7 @@
 
 import React, { useState } from "react";
 import axios from "axios";
+import { apiUrl } from "../config/api";
 import SmartBooking from "./SmartBooking";
 import { useCaregiver } from "../context/CaregiverContext";
 
@@ -549,7 +550,7 @@ export default function AppointmentForm({ onAdd }) {
       console.log("📦 Appointment booking payload:", payload);
 
       const response = await axios.post(
-        "http://localhost:5000/api/appointments",
+        apiUrl("/api/appointments"),
         payload,
         {
           headers: {

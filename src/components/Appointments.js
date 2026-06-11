@@ -2,6 +2,7 @@
 
 // src/components/Appointments.js
 import React, { useState, useEffect, useCallback } from 'react';
+import { apiUrl } from '../config/api';
 import { useToast } from '../context/ToastContext';
 import AppointmentForm from './AppointmentForm';
 import LoadingSpinner from './LoadingSpinner';
@@ -33,7 +34,7 @@ const Appointments = ({ user }) => {
       setError(null);
       const token = localStorage.getItem('token');
 
-      const res = await fetch('/api/appointments', {
+      const res = await fetch(apiUrl('/api/appointments'), {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -84,7 +85,7 @@ const Appointments = ({ user }) => {
   const handleStatusUpdate = async (appointmentId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/appointments/${appointmentId}/status`, {
+      const res = await fetch(apiUrl(`/api/appointments/${appointmentId}/status`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -134,7 +135,7 @@ const Appointments = ({ user }) => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/appointments/${appointmentId}`, {
+      const res = await fetch(apiUrl(`/api/appointments/${appointmentId}`), {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiUrl } from "../config/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const AdminDoctors = () => {
@@ -10,7 +11,7 @@ const AdminDoctors = () => {
       setLoading(true);
       const token = localStorage.getItem("token");
 
-      const res = await fetch("/api/doctors", {
+      const res = await fetch(apiUrl("/api/doctors"), {
         headers: {
           Authorization: `Bearer ${token}`,
         },

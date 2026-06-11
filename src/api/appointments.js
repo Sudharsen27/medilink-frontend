@@ -1,86 +1,46 @@
-// import axios from "axios";
-
-// const API = axios.create({
-//   baseURL: "http://localhost:5000/api/appointments",
-// });
-
-// // ✅ Automatically attach token to requests
-// API.interceptors.request.use((req) => {
-//   const token = localStorage.getItem("token");
-//   if (token) {
-//     req.headers.Authorization = `Bearer ${token}`;
-//   }
-//   return req;
-// });
-
-// // ===== Appointments API =====
-
-// // Normal user: get own appointments
-// export const fetchAppointments = () => API.get("/");
-
-// // Admin: get all appointments
-// export const fetchAllAppointments = () => API.get("/all");
-
-// // Create appointment
-// export const createAppointment = (appointment) => API.post("/", appointment);
-
-// // Delete appointment
-// export const deleteAppointment = (id) => API.delete(`/${id}`);
-
-// // Update appointment
-// export const updateAppointment = (id, data) => API.put(`/${id}`, data);
-
-// // Update appointment status (admin only)
-// export const updateAppointmentStatus = (id, status) =>
-//   API.patch(`/${id}/status`, { status });
-
-
 import axios from "axios";
+import { apiUrl } from "../config/api";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api/appointments",
+  baseURL: apiUrl("/api/appointments"),
 });
 
-// 🔐 Attach JWT token automatically
-API.interceptors.request.use(
-  (req) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      req.headers.Authorization = `Bearer ${token}`;
-    }
-    return req;
-  },
-  (error) => Promise.reject(error)
-);
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
-// ===============================
-// Appointments API
-// ===============================
-
-// Normal user: get own appointments
-export const fetchAppointments = () => API.get("/");
-
-// Admin: get all appointments
-export const fetchAllAppointments = () => API.get("/all");
-
-// Create appointment
-export const createAppointment = (appointment) =>
-  API.post("/", appointment);
-
-// ❗ DELETE appointment
-// 🔴 CHANGE PATH HERE IF BACKEND DIFFERS
-export const deleteAppointment = (id) => {
-  console.log("API delete appointment ID:", id);
-  return API.delete(`/${id}`);
+export const fetchAppointments = async () => {
+  const res = await API.get("/");
+  return res.data;
 };
 
-// Update full appointment
-export const updateAppointment = (id, data) =>
-  API.put(`/${id}`, data);
-
-// Update appointment status
-// 🔴 CHANGE PATH HERE IF BACKEND DIFFERS
-export const updateAppointmentStatus = (id, status) => {
-  console.log("API update status:", id, status);
-  return API.patch(`/${id}/status`, { status });
+export const fetchAllAppointments = async () => {
+  const res = await API.get("/all");
+  return res.data;
 };
+
+export const createAppointment = async (data) => {
+  const res = await API.post("/", data);
+  return res.data;
+};
+
+export const updateAppointment = async (id, data) => {
+  const res = await API.put(`/${id}`, data);
+  return res.data;
+};
+
+export const deleteAppointment = async (id) => {
+  const res = await API.delete(`/${id}`);
+  return res.data;
+};
+
+export const updateAppointmentStatus = async (id, status) => {
+  const res = await API.patch(`/${id}/status`, { status });
+  return res.data;
+};
+
+export default API;

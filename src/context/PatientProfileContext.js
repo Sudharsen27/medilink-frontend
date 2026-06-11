@@ -557,6 +557,7 @@ import React, {
 } from "react";
 
 import { useToast } from "./ToastContext";
+import { API_BASE_URL } from "../config/api";
 
 const PatientProfileContext = createContext();
 
@@ -568,8 +569,7 @@ export const usePatientProfile = () => {
   return context;
 };
 
-// ✅ FIX: Correct backend port
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = API_BASE_URL;
 
 export const PatientProfileProvider = ({ children }) => {
   const [patientProfile, setPatientProfile] = useState(null);

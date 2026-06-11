@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { apiUrl } from "../config/api";
 
 const DoctorProfile = () => {
   const { id } = useParams();
@@ -9,7 +10,7 @@ const DoctorProfile = () => {
 
   useEffect(() => {
     const fetchDoctor = async () => {
-      const res = await fetch(`/api/doctors/${id}`);
+      const res = await fetch(apiUrl(`/api/doctors/${id}`));
       const data = await res.json();
       setDoctor(data);
     };

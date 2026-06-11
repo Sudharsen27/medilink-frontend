@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiUrl } from "../config/api";
 import { useToast } from "../context/ToastContext";
 import { useFavorites } from "../context/FavoritesContext";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -37,7 +38,7 @@ const Doctors = () => {
       setLoading(true);
 
       const token = localStorage.getItem("token");
-      const res = await fetch("/api/doctors", {
+      const res = await fetch(apiUrl("/api/doctors"), {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 

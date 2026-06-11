@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiUrl } from "../config/api";
 import SmartSlotSuggestions from "./SmartSlotSuggestions";
 
 export default function SmartBooking({ doctorId, onConfirm }) {
@@ -7,7 +8,7 @@ export default function SmartBooking({ doctorId, onConfirm }) {
   useEffect(() => {
     if (!doctorId) return;
 
-    fetch(`/api/smart-appointments/smart-slots?doctorId=${doctorId}`, {
+    fetch(apiUrl(`/api/smart-appointments/smart-slots?doctorId=${doctorId}`), {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },

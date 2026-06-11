@@ -1,5 +1,6 @@
 // components/HealthCheck.js
 import React, { useState, useEffect, useCallback } from 'react';
+import { apiUrl } from '../config/api';
 import { useToast } from '../context/ToastContext';
 
 const HealthCheck = () => {
@@ -10,7 +11,7 @@ const HealthCheck = () => {
   const checkHealth = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/health');
+      const response = await fetch(apiUrl('/health'));
       const data = await response.json();
       
       setHealthStatus(data);

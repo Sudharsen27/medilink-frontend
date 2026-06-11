@@ -18,7 +18,7 @@
 //     try {
 //       setLoading(true);
 
-//       const res = await fetch("/api/appointments/all", {
+//       const res = await fetch(apiUrl("/api/appointments/all"), {
 //         headers: {
 //           Authorization: `Bearer ${token}`,
 //         },
@@ -50,7 +50,7 @@
 //     }
 
 //     try {
-//       const res = await fetch(`/api/appointments/${id}/status`, {
+//       const res = await fetch(apiUrl(`/api/appointments/${id}/status`), {
 //         method: "PATCH",
 //         headers: {
 //           "Content-Type": "application/json",
@@ -148,6 +148,7 @@
 
 
 import { useEffect, useState, useCallback } from "react";
+import { apiUrl } from "../config/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useToast } from "../context/ToastContext";
 
@@ -165,7 +166,7 @@ const AdminAppointments = () => {
     try {
       setLoading(true);
 
-      const res = await fetch("/api/appointments/all", {
+      const res = await fetch(apiUrl("/api/appointments/all"), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -197,7 +198,7 @@ const AdminAppointments = () => {
     }
 
     try {
-      const res = await fetch(`/api/appointments/${id}/status`, {
+      const res = await fetch(apiUrl(`/api/appointments/${id}/status`), {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

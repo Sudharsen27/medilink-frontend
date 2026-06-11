@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { apiUrl } from '../config/api';
 
 const Prescriptions = ({ user }) => {
   const [prescriptions, setPrescriptions] = useState([]);
@@ -13,7 +14,7 @@ const Prescriptions = ({ user }) => {
   const fetchPrescriptions = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('/api/prescriptions', {
+      const response = await axios.get(apiUrl('/api/prescriptions'), {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPrescriptions(response.data);

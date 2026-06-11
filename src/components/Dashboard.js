@@ -34,11 +34,12 @@ const Dashboard = ({ user, onLogout }) => {
 
   // Memoized statistics calculation
   const stats = useMemo(() => {
-    const total = appointments.length;
-    const pending = appointments.filter(a => a.status === 'pending').length;
-    const confirmed = appointments.filter(a => a.status === 'confirmed').length;
-    const cancelled = appointments.filter(a => a.status === 'cancelled').length;
-    const completed = appointments.filter(a => a.status === 'completed').length;
+    const list = Array.isArray(appointments) ? appointments : [];
+    const total = list.length;
+    const pending = list.filter(a => a.status === 'pending').length;
+    const confirmed = list.filter(a => a.status === 'confirmed').length;
+    const cancelled = list.filter(a => a.status === 'cancelled').length;
+    const completed = list.filter(a => a.status === 'completed').length;
     
     return { total, pending, confirmed, cancelled, completed };
   }, [appointments]);
@@ -79,7 +80,7 @@ const Dashboard = ({ user, onLogout }) => {
         ? await fetchAllAppointments() 
         : await fetchAppointments();
       
-      setAppointments(response.data);
+      setAppointments(Array.isArray(response) ? response : []);
       addToast('Data refreshed successfully', 'success');
     } catch (error) {
       console.error('Failed to fetch appointments:', error);

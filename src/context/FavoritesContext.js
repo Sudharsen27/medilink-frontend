@@ -36,7 +36,7 @@
 //         }
 
 //         // Fetch favorites from backend
-//         const response = await fetch('/api/favorites', {
+//         const response = await fetch(apiUrl('/api/favorites'), {
 //           headers: { Authorization: `Bearer ${token}` },
 //         });
 
@@ -95,7 +95,7 @@
 //       }
 
 //       // Authenticated → Sync with backend
-//       const response = await fetch(`/api/favorites/${doctor.id}`, {
+//       const response = await fetch(apiUrl(`/api/favorites/${doctor.id}`), {
 //         method: 'POST',
 //         headers: {
 //           Authorization: `Bearer ${token}`,
@@ -141,7 +141,7 @@
 //         return;
 //       }
 
-//       const response = await fetch(`/api/favorites/${doctorId}`, {
+//       const response = await fetch(apiUrl(`/api/favorites/${doctorId}`), {
 //         method: 'DELETE',
 //         headers: { Authorization: `Bearer ${token}` },
 //       });
@@ -223,6 +223,7 @@ import React, {
   useCallback,
 } from 'react';
 import { useToast } from './ToastContext';
+import { apiUrl } from '../config/api';
 
 const FavoritesContext = createContext(null);
 
@@ -257,7 +258,7 @@ export const FavoritesProvider = ({ children }) => {
       }
 
       // Logged-in user → backend
-      const response = await fetch('/api/favorites', {
+      const response = await fetch(apiUrl('/api/favorites'), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -329,7 +330,7 @@ setFavorites(normalized);
       }
 
       // Logged-in user → backend
-      const response = await fetch(`/api/favorites/${doctor.id}`, {
+      const response = await fetch(apiUrl(`/api/favorites/${doctor.id}`), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -390,7 +391,7 @@ setFavorites(normalized);
       return;
     }
 
-    const response = await fetch(`/api/favorites/${doctorId}`, {
+    const response = await fetch(apiUrl(`/api/favorites/${doctorId}`), {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,

@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { apiUrl } from "../config/api";
 import { useToast } from "../context/ToastContext";
 
 const BookAppointment = () => {
@@ -31,7 +32,7 @@ const BookAppointment = () => {
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
-        const res = await fetch(`/api/doctors/${doctorId}`);
+        const res = await fetch(apiUrl(`/api/doctors/${doctorId}`));
         const data = await res.json();
         setDoctor(data);
       } catch (err) {
@@ -70,7 +71,7 @@ const BookAppointment = () => {
         patientPhone: user.phone || "9999999999",
       };
 
-      const res = await fetch("/api/appointments", {
+      const res = await fetch(apiUrl("/api/appointments"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

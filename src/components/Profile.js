@@ -408,6 +408,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 import ExportButton from './ExportButton'; // ✅ Added
 
 export default function Profile({ user, setUser }) {
@@ -421,7 +422,7 @@ export default function Profile({ user, setUser }) {
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const API_URL = 'http://localhost:5000';
+  const API_URL = API_BASE_URL;
 
   // ✅ Fetch user profile
   useEffect(() => {

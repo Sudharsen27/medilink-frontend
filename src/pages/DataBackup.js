@@ -215,6 +215,7 @@
 // export default DataBackup;
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { apiUrl } from '../config/api';
 import { useToast } from '../context/ToastContext';
 import ExportButton from '../components/ExportButton';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -233,13 +234,13 @@ const DataBackup = () => {
 
       // Fetch all user-related data simultaneously
       const [appointmentsRes, prescriptionsRes, medicalRecordsRes] = await Promise.all([
-        fetch('/api/appointments', {
+        fetch(apiUrl('/api/appointments'), {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch('/api/prescriptions', {
+        fetch(apiUrl('/api/prescriptions'), {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch('/api/medical-records', {
+        fetch(apiUrl('/api/medical-records'), {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);

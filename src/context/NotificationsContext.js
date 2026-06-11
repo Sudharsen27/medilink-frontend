@@ -1,6 +1,7 @@
 
 
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { API_BASE_URL } from '../config/api';
 import { useToast } from './ToastContext';
 
 const NotificationsContext = createContext();
@@ -14,7 +15,7 @@ export const useNotifications = () => {
 };
 
 export const NotificationsProvider = ({ children }) => {
-  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const API_BASE = API_BASE_URL;
   
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
