@@ -1,73 +1,94 @@
-// components/QuickActions.js
-import React from 'react';
+import React from "react";
+import { motion } from "framer-motion";
+import {
+  CalendarPlus,
+  RefreshCw,
+  Printer,
+  Bell,
+} from "lucide-react";
+import Card, { CardHeader } from "../ui/Card";
 
-const QuickActions = ({ onAction, unreadNotifications = 0 }) => {
-  const actions = [
-    {
-      id: 'new-appointment',
-      label: 'New Appointment',
-      icon: '➕',
-      description: 'Schedule new appointment',
-      color: 'blue'
-    },
-    {
-      id: 'refresh',
-      label: 'Refresh Data',
-      icon: '🔄',
-      description: 'Update latest information',
-      color: 'green'
-    },
-    {
-      id: 'print',
-      label: 'Print Report',
-      icon: '🖨️',
-      description: 'Generate printable report',
-      color: 'purple'
-    },
-    {
-      id: 'notifications',
-      label: 'Notifications',
-      icon: '🔔',
-      description: 'View your notifications',
-      color: 'yellow',
-      badge: unreadNotifications
-    }
-  ];
+const actions = [
+  {
+    id: "new-appointment",
+    label: "New Appointment",
+    description: "Schedule a visit",
+    icon: CalendarPlus,
+    color: "health",
+  },
+  {
+    id: "refresh",
+    label: "Refresh Data",
+    description: "Sync latest info",
+    icon: RefreshCw,
+    color: "blue",
+  },
+  {
+    id: "print",
+    label: "Print Report",
+    description: "Export summary",
+    icon: Printer,
+    color: "violet",
+  },
+  {
+    id: "notifications",
+    label: "Notifications",
+    description: "View alerts",
+    icon: Bell,
+    color: "amber",
+    badge: true,
+  },
+];
 
-  const colorClasses = {
-    blue: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300',
-    green: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/40 text-green-700 dark:text-green-300',
-    purple: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/40 text-purple-700 dark:text-purple-300',
-    yellow: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 hover:bg-yellow-100 dark:hover:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300'
-  };
+const iconColors = {
+  health: "bg-health-100 text-health-700 dark:bg-health-900/40 dark:text-health-300",
+  blue: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  violet: "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
+  amber: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+};
 
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        Quick Actions
-      </h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {actions.map((action) => (
-          <button
+const QuickActions = ({ onAction, unreadNotifications = 0 }) => (
+  <Card padding="md">
+    <CardHeader
+      title="Quick Actions"
+      subtitle="Common tasks at your fingertips"
+    />
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {actions.map((action, index) => {
+        const Icon = action.icon;
+        const badgeCount = action.badge ? unreadNotifications : 0;
+
+        return (
+          <motion.button
             key={action.id}
+            type="button"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => onAction(action.id)}
-            className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 hover:scale-105 hover:shadow-md ${colorClasses[action.color]}`}
+            className="relative flex flex-col items-center gap-2 p-4 rounded-card border border-slate-200/80 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 hover:shadow-soft transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-health-500"
           >
-            <div className="relative">
-              <span className="text-2xl mb-2">{action.icon}</span>
-              {action.badge > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center animate-pulse">
-                  {action.badge}
+            <div className={`relative w-11 h-11 rounded-xl flex items-center justify-center ${iconColors[action.color]}`}>
+              <Icon className="w-5 h-5" aria-hidden="true" />
+              {badgeCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 bg-clinical-rose text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {badgeCount}
                 </span>
               )}
             </div>
-            <span className="text-sm font-medium text-center">{action.label}</span>
-            <span className="text-xs opacity-75 text-center mt-1">{action.description}</span>
-          </button>
-        ))}
-      </div>
+            <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 text-center">
+              {action.label}
+            </span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 text-center leading-tight">
+              {action.description}
+            </span>
+          </motion.button>
+        );
+      })}
     </div>
-  );
-};
+  </Card>
+);
 
 export default QuickActions;

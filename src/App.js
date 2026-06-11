@@ -359,7 +359,7 @@ function App() {
   useAutoLogout(user, handleLogout);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-health-50/30 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-health-950/20 transition-colors duration-300">
       {user && (
         <Navbar
           user={user}
@@ -369,7 +369,7 @@ function App() {
         />
       )}
 
-      <div className={user ? "pt-20 px-4" : "px-4"}>
+      <div className={user ? "pb-8" : ""}>
         <Routes>
           {/* Default */}
           <Route

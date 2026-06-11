@@ -33,19 +33,24 @@ export const ToastProvider = ({ children }) => {
     <ToastContext.Provider value={{ addToast, removeToast }}>
       {children}
 
-      {/* ✅ Toast container */}
-      <div className="fixed bottom-5 right-5 flex flex-col gap-2 z-50">
+      <div
+        className="fixed bottom-5 right-5 flex flex-col gap-2 z-[100] max-w-sm"
+        role="region"
+        aria-label="Notifications"
+        aria-live="polite"
+      >
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`px-4 py-2 rounded-lg shadow-lg text-white transition-all duration-300 transform hover:scale-105 ${
-              toast.type === 'success'
-                ? 'bg-green-500'
-                : toast.type === 'error'
-                ? 'bg-red-500'
-                : toast.type === 'info'
-                ? 'bg-blue-500'
-                : 'bg-gray-500'
+            role="status"
+            className={`px-4 py-3 rounded-xl shadow-glass text-sm font-medium text-white backdrop-blur-sm border border-white/20 animate-slide-up ${
+              toast.type === "success"
+                ? "bg-health-600/95"
+                : toast.type === "error"
+                ? "bg-clinical-rose/95"
+                : toast.type === "info"
+                ? "bg-clinical-blue/95"
+                : "bg-slate-600/95"
             }`}
           >
             {toast.message}

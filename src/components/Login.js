@@ -1,67 +1,53 @@
-
-
-
-
-// src/components/Login.js
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, LogIn, ArrowRight, Heart } from 'lucide-react';
-import LoadingSpinner from './LoadingSpinner';
-import { loginUser } from '../api/auth';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  LogIn,
+  ArrowRight,
+  Activity,
+} from "lucide-react";
+import { loginUser } from "../api/auth";
+import Button from "../ui/Button";
+import Input from "../ui/Input";
+import Card from "../ui/Card";
 
 const Login = ({ onLogin }) => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // ------------------------------------------
-  // Handle form input
-  // ------------------------------------------
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError('');
+    setError("");
   };
 
-  // ------------------------------------------
-  // Handle login submit
-  // ------------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      // 🔥 Use loginUser() API (Axios)
       const data = await loginUser(formData);
-
-      // Backend returns: { success, message, token, user }
       if (!data.success) {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(data.message || "Login failed");
       }
-
-      // Save token
-      localStorage.setItem('token', data.token);
-
-      // Save user
-      localStorage.setItem('user', JSON.stringify(data.user));
-
-      // Notify parent / app state
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
       onLogin(data.user);
-
-      // Redirect
-      navigate('/dashboard');
-
+      navigate("/dashboard");
     } catch (err) {
       console.error("LOGIN ERROR:", err);
-
       const message =
         err.response?.data?.message ||
         err.response?.data?.error ||
         err.message ||
-        'Login failed. Please try again.';
-
+        "Login failed. Please try again.";
       setError(message);
     } finally {
       setLoading(false);
@@ -69,152 +55,144 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
-      <div className="container mx-auto px-4 py-6 lg:py-0">
-        <div className="flex flex-col lg:flex-row min-h-screen lg:items-center">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      {/* Background decoration */}
+      <div className="fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-health-200/40 dark:bg-health-900/20 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-blue-200/30 dark:bg-blue-900/20 blur-3xl" />
+      </div>
 
-          {/* LEFT SIDE - Form */}
-          <div className="w-full lg:w-1/2 flex items-center justify-center py-8 lg:py-12">
-            <div className="w-full max-w-md">
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        {/* Form */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className="text-center mb-8 lg:hidden">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-health-600 shadow-glow mb-4">
+              <Activity className="w-7 h-7 text-white" aria-hidden="true" />
+            </div>
+            <h1 className="text-2xl font-display font-bold text-slate-900 dark:text-white">
+              MediLink
+            </h1>
+            <p className="text-slate-500 text-sm mt-1">Your healthcare partner</p>
+          </div>
 
-              {/* Mobile Logo */}
-              <div className="text-center mb-8 lg:hidden">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-600 to-green-700 rounded-2xl mb-4 shadow-lg">
-                  <Heart className="w-8 h-8 text-white" fill="white" />
-                </div>
-                <h1 className="text-3xl font-bold text-gray-800">MediLink</h1>
-                <p className="text-gray-600 mt-2">Your Healthcare Partner</p>
+          <Card glass padding="lg" className="max-w-md mx-auto lg:mx-0">
+            <div className="text-center mb-8">
+              <div className="hidden lg:inline-flex items-center justify-center w-12 h-12 rounded-xl bg-health-600 shadow-glow mb-4">
+                <Activity className="w-6 h-6 text-white" aria-hidden="true" />
               </div>
+              <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white">
+                Welcome back
+              </h2>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                Sign in to continue to your dashboard
+              </p>
+            </div>
 
-              <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+              <Input
+                label="Email address"
+                name="email"
+                type="email"
+                placeholder="you@medilink.com"
+                value={formData.email}
+                onChange={handleChange}
+                icon={Mail}
+                required
+                disabled={loading}
+                autoComplete="email"
+              />
 
-                {/* Desktop Title */}
-                <div className="hidden lg:block text-center mb-6">
-                  <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-green-600 to-green-700 rounded-xl mb-3 shadow-lg">
-                    <Heart className="w-7 h-7 text-white" fill="white" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-gray-800">Welcome Back</h2>
-                  <p className="text-gray-600 mt-2">Sign in to continue to MediLink</p>
-                </div>
-
-                {/* Mobile Title */}
-                <div className="lg:hidden text-center">
-                  <h2 className="text-2xl font-bold text-gray-800">Welcome Back</h2>
-                  <p className="text-gray-600 mt-1 text-sm">Sign in to your account</p>
-                </div>
-
-                {/* Login Form */}
-                <form onSubmit={handleSubmit} className="space-y-5">
-
-                  {/* Email */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        name="email"
-                        type="email"
-                        placeholder="doctor@medilink.com"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        disabled={loading}
-                        className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Password */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        name="password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        disabled={loading}
-                        className="w-full pl-11 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPassword ? <EyeOff /> : <Eye />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Error */}
-                  {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                      {error}
-                    </div>
-                  )}
-
-                  {/* Submit */}
+              <Input
+                label="Password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                icon={Lock}
+                required
+                disabled={loading}
+                autoComplete="current-password"
+                rightElement={
                   <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-lg"
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
-                    {loading ? (
-                      <LoadingSpinner size="sm" text="Signing in..." />
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
                     ) : (
-                      <>
-                        <LogIn className="w-5 h-5" />
-                        Sign In
-                      </>
+                      <Eye className="w-4 h-4" />
                     )}
                   </button>
-                </form>
+                }
+              />
 
-                {/* Divider */}
-                <div className="relative my-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white text-gray-500">or</span>
-                  </div>
+              {error && (
+                <div
+                  role="alert"
+                  className="px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-sm"
+                >
+                  {error}
                 </div>
+              )}
 
-                {/* Register Link */}
-                <div className="text-center">
-                  <p className="text-gray-600 text-sm">
-                    Don't have an account?{" "}
-                    <Link
-                      to="/register"
-                      className="text-green-600 hover:underline font-semibold inline-flex items-center gap-1"
-                    >
-                      Create Account
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
-                  </p>
-                </div>
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                loading={loading}
+                icon={LogIn}
+              >
+                {loading ? "Signing in..." : "Sign in"}
+              </Button>
+            </form>
 
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="px-3 text-xs text-slate-400 bg-white/80 dark:bg-slate-900/80">
+                  or
+                </span>
               </div>
             </div>
-          </div>
 
-          {/* RIGHT SIDE IMAGE */}
-          <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12">
+            <p className="text-center text-sm text-slate-600 dark:text-slate-400">
+              Don&apos;t have an account?{" "}
+              <Link
+                to="/register"
+                className="text-health-600 dark:text-health-400 font-semibold hover:underline inline-flex items-center gap-1"
+              >
+                Create account
+                <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+              </Link>
+            </p>
+          </Card>
+        </motion.div>
+
+        {/* Hero image */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="hidden lg:block"
+        >
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-tr from-health-500/20 to-blue-500/20 rounded-card-xl blur-2xl" aria-hidden="true" />
             <img
               src="/Images/doctorlogin.png"
-              alt="Doctor Login"
-              className="rounded-3xl shadow-2xl"
+              alt="Healthcare professional using MediLink"
+              className="relative rounded-card-xl shadow-glass-lg w-full object-cover max-h-[560px]"
             />
           </div>
-
-        </div>
+        </motion.div>
       </div>
     </div>
   );

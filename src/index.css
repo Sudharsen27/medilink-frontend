@@ -1,3 +1,57 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth antialiased;
+  }
+
+  body {
+    @apply font-sans text-slate-800 bg-surface-muted dark:bg-slate-950 dark:text-slate-100;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-health-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-950;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/60 dark:border-slate-700/50 shadow-glass;
+  }
+
+  .glass-nav {
+    @apply bg-health-700/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-white/10 dark:border-slate-700/40 shadow-glass;
+  }
+
+  .health-card {
+    @apply rounded-card-lg bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/60 shadow-soft;
+  }
+
+  .health-input {
+    @apply w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80
+      px-4 py-3 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400
+      transition-all duration-200
+      focus:border-health-500 focus:ring-2 focus:ring-health-500/20 focus:outline-none
+      disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .skeleton-shimmer {
+    @apply bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800;
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
