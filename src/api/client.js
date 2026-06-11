@@ -1,5 +1,8 @@
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
+import { unwrap } from "../lib/unwrapApi";
+
+export { unwrap };
 
 const client = axios.create({
   baseURL: API_BASE_URL,
@@ -28,14 +31,5 @@ client.interceptors.response.use(
     return Promise.reject(enriched);
   }
 );
-
-/** Unwrap `{ success, data }` or return payload as-is */
-export const unwrap = (response) => {
-  const payload = response?.data ?? response;
-  if (payload && typeof payload === "object" && "data" in payload) {
-    return payload.data;
-  }
-  return payload;
-};
 
 export default client;

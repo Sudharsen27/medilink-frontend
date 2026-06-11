@@ -1,6 +1,6 @@
-import { unwrap } from "./client";
+import { unwrap } from "./unwrapApi";
 
-describe("api unwrap helper", () => {
+describe("unwrapApi", () => {
   test("unwraps success payloads with data key", () => {
     expect(unwrap({ data: { success: true, data: [1, 2, 3] } })).toEqual([
       1, 2, 3,
