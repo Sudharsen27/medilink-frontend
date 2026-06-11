@@ -177,7 +177,7 @@ const Login = ({ onLogin }) => {
           </Card>
         </motion.div>
 
-        {/* Hero image */}
+        {/* Hero — telemedicine lifestyle photo */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -185,11 +185,14 @@ const Login = ({ onLogin }) => {
           className="hidden lg:block"
         >
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-tr from-health-500/20 to-blue-500/20 rounded-card-xl blur-2xl" aria-hidden="true" />
+            <div
+              className="absolute inset-0 bg-gradient-to-tr from-health-500/20 to-blue-500/20 rounded-card-xl blur-2xl"
+              aria-hidden="true"
+            />
             <img
-              src="/Images/doctorlogin.png"
-              alt="Healthcare professional using MediLink"
-              className="relative rounded-card-xl shadow-glass-lg w-full object-cover max-h-[560px]"
+              src="/Images/login-hero.png"
+              alt="Patient using MediLink telemedicine at home"
+              className="relative rounded-card-xl shadow-glass-lg w-full object-cover max-h-[560px] border border-white/40 dark:border-slate-700/50"
             />
           </div>
         </motion.div>
