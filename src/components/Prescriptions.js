@@ -1,186 +1,240 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { apiUrl } from '../config/api';
+import React, { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
+import {
+  Pill,
+  Stethoscope,
+  Download,
+  ChevronDown,
+  ChevronUp,
+  Calendar,
+  FileText,
+} from "lucide-react";
+import { fetchPrescriptions, fetchPrescriptionById } from "../api/prescriptions";
+import PageContainer from "../ui/PageContainer";
+import Card from "../ui/Card";
+import Button from "../ui/Button";
+import Badge from "../ui/Badge";
+import { Eyebrow, Heading } from "../ui/Typography";
+import { SkeletonScreen, Skeleton } from "../ui/Skeleton";
 
-const Prescriptions = ({ user }) => {
+const displayDoctor = (name) =>
+  name?.trim().startsWith("Dr.") ? name.trim() : `Dr. ${name || "Physician"}`;
+
+const statusVariant = (status) => {
+  const s = String(status || "").toLowerCase();
+  if (s === "active") return "success";
+  if (s === "expired" || s === "cancelled") return "danger";
+  return "default";
+};
+
+const Prescriptions = () => {
   const [prescriptions, setPrescriptions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPrescription, setSelectedPrescription] = useState(null);
+  const [error, setError] = useState("");
+  const [expandedId, setExpandedId] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
-  useEffect(() => {
-    fetchPrescriptions();
-  }, []);
-
-  const fetchPrescriptions = async () => {
+  const loadPrescriptions = useCallback(async () => {
+    setLoading(true);
+    setError("");
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(apiUrl('/api/prescriptions'), {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const payload = response.data;
-      const list = Array.isArray(payload)
-        ? payload
-        : payload?.data ?? payload?.prescriptions ?? [];
-      setPrescriptions(Array.isArray(list) ? list : []);
-    } catch (error) {
-      console.error('Error fetching prescriptions:', error);
+      const data = await fetchPrescriptions();
+      setPrescriptions(data);
+    } catch (err) {
+      console.error(err);
+      setError("Could not load prescriptions. Make sure you are logged in.");
       setPrescriptions([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const downloadPrescription = (prescriptionId) => {
-    // Simulate PDF download
-    alert(`Downloading prescription #${prescriptionId}`);
-    // In real implementation, this would generate and download a PDF
-  };
+  useEffect(() => {
+    loadPrescriptions();
+  }, [loadPrescriptions]);
 
-  // Removed unused formatMedication function
+  const toggleDetails = async (prescription) => {
+    if (expandedId === prescription.id) {
+      setExpandedId(null);
+      return;
+    }
+    setDetailLoading(true);
+    try {
+      await fetchPrescriptionById(prescription.id);
+      setExpandedId(prescription.id);
+    } catch {
+      setExpandedId(prescription.id);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
+      <PageContainer maxWidth="max-w-4xl">
+        <SkeletonScreen label="Loading prescriptions" className="space-y-4">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-40 w-full" rounded="rounded-2xl" />
+          <Skeleton className="h-40 w-full" rounded="rounded-2xl" />
+        </SkeletonScreen>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Prescriptions</h1>
-        <span className="text-gray-600 dark:text-gray-400">
-          {prescriptions.length} prescription(s) found
-        </span>
+    <PageContainer maxWidth="max-w-4xl">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+        <div>
+          <Eyebrow>Pharmacy</Eyebrow>
+          <Heading level={1} className="mt-1">
+            My Prescriptions
+          </Heading>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Active medications and instructions from your doctors.
+          </p>
+        </div>
+        <Badge variant="default" size="sm">
+          {prescriptions.length} visit{prescriptions.length !== 1 ? "s" : ""}
+        </Badge>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        {prescriptions.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-gray-400 dark:text-gray-500 text-6xl mb-4">💊</div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              No prescriptions found
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              Your prescriptions will appear here after consultations.
-            </p>
+      {error && (
+        <Card padding="sm" className="!p-4 mb-4 border-rose-200 dark:border-rose-900/40">
+          <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>
+        </Card>
+      )}
+
+      {prescriptions.length === 0 ? (
+        <Card padding="lg" className="text-center !py-14">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-health-50 dark:bg-health-950/30 flex items-center justify-center">
+            <Pill className="w-7 h-7 text-health-600 dark:text-health-400" />
           </div>
-        ) : (
-          <div className="space-y-6">
-            {prescriptions.map(prescription => (
-              <div key={prescription.id} className="border dark:border-gray-600 rounded-lg p-6 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                      <span className="text-blue-600 dark:text-blue-400 font-semibold">Dr.</span>
+          <h3 className="font-display font-semibold text-slate-900 dark:text-white mb-2">
+            No prescriptions yet
+          </h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto mb-6">
+            After a consultation, your doctor&apos;s prescriptions will appear here with dosage and instructions.
+          </p>
+          <Link to="/telemedicine">
+            <Button variant="primary">Book a consultation</Button>
+          </Link>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {prescriptions.map((rx) => (
+            <Card key={rx.id} padding="md" className="!p-0 overflow-hidden">
+              <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-11 h-11 rounded-xl bg-health-50 dark:bg-health-950/40 flex items-center justify-center shrink-0">
+                      <Stethoscope className="w-5 h-5 text-health-600 dark:text-health-400" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
-                        Dr. {prescription.doctor_name}
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-slate-900 dark:text-white truncate">
+                        {displayDoctor(rx.doctor_name)}
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-400">{prescription.doctor_specialization}</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {rx.doctor_specialization}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {new Date(rx.created_at).toLocaleDateString(undefined, {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
                     </div>
                   </div>
-                  
-                  <div className="text-right">
-                    <span className="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                      Completed
+                  <Badge variant={statusVariant(rx.status)} size="sm" className="w-fit capitalize">
+                    {rx.status || "active"}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="p-5 sm:p-6 space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Medications ({rx.medications?.length || 0})
+                </p>
+                {(rx.medications || []).map((med, i) => (
+                  <div
+                    key={`${rx.id}-${i}`}
+                    className="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Pill className="w-4 h-4 text-health-600 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-medium text-slate-900 dark:text-white truncate">
+                          {med.name}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {med.dosage} · {med.frequency}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-slate-500 whitespace-nowrap shrink-0">
+                      {med.duration}
                     </span>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {new Date(prescription.created_at).toLocaleDateString()}
+                  </div>
+                ))}
+
+                {rx.instructions && (
+                  <div className="p-3 rounded-xl border border-blue-100 dark:border-blue-900/40 bg-blue-50/50 dark:bg-blue-950/20">
+                    <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-1 flex items-center gap-1">
+                      <FileText className="w-3.5 h-3.5" />
+                      Instructions
                     </p>
-                  </div>
-                </div>
-
-                {prescription.diagnosis && (
-                  <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                    <h4 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Diagnosis</h4>
-                    <p className="text-yellow-700 dark:text-yellow-300">{prescription.diagnosis}</p>
-                  </div>
-                )}
-
-                <div className="mb-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Medications</h4>
-                  <div className="space-y-3">
-                    {(Array.isArray(prescription.medications) ? prescription.medications : []).map((medication, index) => (
-                      <div key={index} className="flex justify-between items-center py-3 border-b dark:border-gray-600 last:border-b-0">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                            <span className="text-blue-600 dark:text-blue-400 text-sm">💊</span>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-900 dark:text-white">{medication.name}</span>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                              {medication.dosage} • {medication.frequency}
-                            </div>
-                          </div>
-                        </div>
-                        <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                          {medication.duration}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {prescription.instructions && (
-                  <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Instructions</h4>
-                    <p className="text-blue-700 dark:text-blue-300">{prescription.instructions}</p>
-                  </div>
-                )}
-
-                {prescription.follow_up_date && (
-                  <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <h4 className="font-semibold text-green-800 dark:text-green-200 mb-2">Follow-up</h4>
-                    <p className="text-green-700 dark:text-green-300">
-                      Scheduled for {new Date(prescription.follow_up_date).toLocaleDateString()}
+                    <p className="text-sm text-blue-800 dark:text-blue-200 whitespace-pre-line">
+                      {rx.instructions}
                     </p>
-                  </div>
-                )}
-
-                <div className="flex justify-end space-x-3 pt-4 border-t dark:border-gray-600">
-                  <button
-                    onClick={() => setSelectedPrescription(selectedPrescription?.id === prescription.id ? null : prescription)}
-                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition-colors"
-                  >
-                    {selectedPrescription?.id === prescription.id ? 'Hide Details' : 'View Details'}
-                  </button>
-                  <button
-                    onClick={() => downloadPrescription(prescription.id)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors"
-                  >
-                    Download PDF
-                  </button>
-                </div>
-
-                {/* Detailed View */}
-                {selectedPrescription?.id === prescription.id && (
-                  <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <h5 className="font-semibold mb-3">Prescription Details</h5>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <strong>Doctor:</strong> Dr. {prescription.doctor_name}
-                      </div>
-                      <div>
-                        <strong>Specialization:</strong> {prescription.doctor_specialization}
-                      </div>
-                      <div>
-                        <strong>Date Issued:</strong> {new Date(prescription.created_at).toLocaleDateString()}
-                      </div>
-                      <div>
-                        <strong>Valid Until:</strong> {new Date(new Date(prescription.created_at).setDate(new Date(prescription.created_at).getDate() + 30)).toLocaleDateString()}
-                      </div>
-                    </div>
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+
+              <div className="px-5 sm:px-6 py-4 bg-slate-50/80 dark:bg-slate-900/40 flex flex-wrap gap-2 justify-end">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  icon={expandedId === rx.id ? ChevronUp : ChevronDown}
+                  onClick={() => toggleDetails(rx)}
+                  disabled={detailLoading}
+                >
+                  {expandedId === rx.id ? "Hide details" : "Details"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  icon={Download}
+                  onClick={() => window.alert(`PDF download for prescription #${rx.id} coming soon`)}
+                >
+                  Download
+                </Button>
+              </div>
+
+              {expandedId === rx.id && (
+                <div className="px-5 sm:px-6 pb-5 text-sm text-slate-600 dark:text-slate-300 grid sm:grid-cols-2 gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
+                  <p>
+                    <span className="font-medium text-slate-800 dark:text-slate-200">Doctor:</span>{" "}
+                    {displayDoctor(rx.doctor_name)}
+                  </p>
+                  <p>
+                    <span className="font-medium text-slate-800 dark:text-slate-200">Issued:</span>{" "}
+                    {new Date(rx.created_at).toLocaleDateString()}
+                  </p>
+                  {rx.follow_up_date && (
+                    <p>
+                      <span className="font-medium text-slate-800 dark:text-slate-200">Valid until:</span>{" "}
+                      {new Date(rx.follow_up_date).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
+    </PageContainer>
   );
 };
 

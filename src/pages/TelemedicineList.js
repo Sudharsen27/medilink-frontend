@@ -1,138 +1,239 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
+import {
+  Video,
+  Calendar,
+  Clock,
+  Stethoscope,
+  ArrowRight,
+  RefreshCw,
+} from "lucide-react";
+import { fetchTelemedicineAppointments } from "../api/telemedicine";
+import PageContainer from "../ui/PageContainer";
+import Card from "../ui/Card";
+import Button from "../ui/Button";
+import Badge from "../ui/Badge";
+import { Eyebrow, Heading } from "../ui/Typography";
+import { SkeletonScreen, Skeleton } from "../ui/Skeleton";
 
-const TelemedicineList = ({ user }) => {
+const statusVariant = (status) => {
+  const s = String(status || "").toLowerCase();
+  if (s === "confirmed" || s === "in-progress") return "success";
+  if (s === "pending" || s === "reschedule_requested") return "warning";
+  if (s === "scheduled") return "info";
+  return "default";
+};
+
+const formatDate = (value) => {
+  if (!value) return "Date TBD";
+  return new Date(value).toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+const formatTime = (value) => {
+  if (!value) return "—";
+  return String(value).slice(0, 5);
+};
+
+const isJoinable = (appointment) => {
+  const status = String(appointment.status || "").toLowerCase();
+  return !["cancelled", "completed", "no_show"].includes(status);
+};
+
+const TelemedicineList = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadAppointments = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    else setRefreshing(true);
+    setError("");
+    try {
+      const data = await fetchTelemedicineAppointments();
+      setAppointments(data);
+    } catch (err) {
+      console.error(err);
+      setError("Could not load video consultations.");
+      setAppointments([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
-    // Mock data for testing
-    const mockAppointments = [
-      {
-        id: 1,
-        doctor_name: "Dr. Sarah Johnson",
-        doctor_specialization: "Cardiology",
-        appointment_date: new Date().toISOString().split('T')[0], // Today
-        appointment_time: "14:30",
-        reason: "Heart palpitations follow-up",
-        status: "scheduled"
-      },
-      {
-        id: 2,
-        doctor_name: "Dr. Michael Chen",
-        doctor_specialization: "Dermatology",
-        appointment_date: "2024-01-20",
-        appointment_time: "10:00",
-        reason: "Skin rash consultation",
-        status: "scheduled"
-      }
-    ];
-    
-    setAppointments(mockAppointments);
-    setLoading(false);
-  }, []);
+    loadAppointments();
+  }, [loadAppointments]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
+      <PageContainer maxWidth="max-w-4xl">
+        <SkeletonScreen label="Loading telemedicine" className="space-y-4">
+          <Skeleton className="h-8 w-56" />
+          <Skeleton className="h-36 w-full" rounded="rounded-2xl" />
+          <Skeleton className="h-36 w-full" rounded="rounded-2xl" />
+        </SkeletonScreen>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Telemedicine Consultations</h1>
-        <Link
-          to="/doctors"
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
-        >
-          Book New Appointment
-        </Link>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        {appointments.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-gray-400 dark:text-gray-500 text-6xl mb-4">🎥</div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              No Telemedicine Appointments
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-4">
-              You don't have any telemedicine appointments scheduled.
-            </p>
-            <Link
-              to="/doctors"
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors"
-            >
-              Find a Doctor
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {appointments.map(appointment => (
-              <div key={appointment.id} className="border dark:border-gray-600 rounded-lg p-6 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center space-x-4 flex-1">
-                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="text-blue-600 font-bold">DR</span>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
-                        {appointment.doctor_name}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400">{appointment.doctor_specialization}</p>
-                      <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span>📅 {new Date(appointment.appointment_date).toLocaleDateString()}</span>
-                        <span>⏰ {appointment.appointment_time}</span>
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                          {appointment.status}
-                        </span>
-                      </div>
-                      <p className="text-gray-700 dark:text-gray-300 mt-2">
-                        <strong>Reason:</strong> {appointment.reason}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="text-right">
-                    <Link
-                      to={`/telemedicine/${appointment.id}`}
-                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors inline-block"
-                    >
-                      Join Consultation
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Quick Help Section */}
-      <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
-        <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-4">How Telemedicine Works</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="text-2xl mb-2">1️⃣</div>
-            <h4 className="font-medium text-blue-800 dark:text-blue-200">Book Appointment</h4>
-            <p className="text-sm text-blue-700 dark:text-blue-300">Schedule with a doctor for telemedicine</p>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl mb-2">2️⃣</div>
-            <h4 className="font-medium text-blue-800 dark:text-blue-200">Join Call</h4>
-            <p className="text-sm text-blue-700 dark:text-blue-300">Join 15 minutes before your scheduled time</p>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl mb-2">3️⃣</div>
-            <h4 className="font-medium text-blue-800 dark:text-blue-200">Get Treatment</h4>
-            <p className="text-sm text-blue-700 dark:text-blue-300">Consult with doctor and receive prescription</p>
-          </div>
+    <PageContainer maxWidth="max-w-4xl">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+        <div>
+          <Eyebrow>Virtual care</Eyebrow>
+          <Heading level={1} className="mt-1">
+            Telemedicine
+          </Heading>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Join video consultations with your care team from home.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            icon={RefreshCw}
+            onClick={() => loadAppointments(true)}
+            disabled={refreshing}
+          >
+            {refreshing ? "Refreshing…" : "Refresh"}
+          </Button>
+          <Link to="/doctors">
+            <Button size="sm" variant="primary">
+              Book visit
+            </Button>
+          </Link>
         </div>
       </div>
-    </div>
+
+      {error && (
+        <Card padding="sm" className="!p-4 mb-4 border-rose-200 dark:border-rose-900/40">
+          <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>
+        </Card>
+      )}
+
+      {appointments.length === 0 ? (
+        <Card padding="lg" className="text-center !py-14">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-health-50 dark:bg-health-950/30 flex items-center justify-center">
+            <Video className="w-7 h-7 text-health-600 dark:text-health-400" />
+          </div>
+          <h3 className="font-display font-semibold text-slate-900 dark:text-white mb-2">
+            No video visits scheduled
+          </h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto mb-6">
+            Book a telemedicine appointment with a doctor, then return here to join the call.
+          </p>
+          <Link to="/doctors">
+            <Button variant="primary" icon={Stethoscope}>
+              Find a doctor
+            </Button>
+          </Link>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {appointments.map((appointment) => {
+            const date = appointment.appointment_date || appointment.date;
+            const time = appointment.appointment_time || appointment.time;
+            const doctor = appointment.doctor_name || "Your doctor";
+            const joinable = isJoinable(appointment);
+
+            return (
+              <Card
+                key={appointment.id}
+                padding="md"
+                className="!p-5 sm:!p-6 hover:shadow-soft transition-shadow"
+              >
+                <div className="flex flex-col lg:flex-row lg:items-center gap-5">
+                  <div className="flex items-start gap-4 flex-1 min-w-0">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-health-500 to-health-700 flex items-center justify-center shrink-0 shadow-soft">
+                      <Video className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-slate-900 dark:text-white truncate">
+                          {doctor}
+                        </h3>
+                        <Badge
+                          variant={statusVariant(appointment.status)}
+                          size="sm"
+                          className="capitalize"
+                        >
+                          {String(appointment.status || "scheduled").replace(/_/g, " ")}
+                        </Badge>
+                        {(appointment.appointment_type === "telemedicine" ||
+                          appointment.appointment_type === "video") && (
+                          <Badge variant="info" size="sm">
+                            Video
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
+                        {appointment.doctor_specialization || "General Practice"}
+                      </p>
+                      <div className="flex flex-wrap gap-4 text-sm text-slate-600 dark:text-slate-300">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Calendar className="w-4 h-4 text-health-600" />
+                          {formatDate(date)}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Clock className="w-4 h-4 text-health-600" />
+                          {formatTime(time)}
+                        </span>
+                      </div>
+                      {appointment.reason && (
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">
+                          {appointment.reason}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 lg:text-right">
+                    {joinable ? (
+                      <Link to={`/telemedicine/${appointment.id}`}>
+                        <Button variant="primary" icon={ArrowRight} className="w-full lg:w-auto">
+                          Join consultation
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button variant="outline" disabled className="w-full lg:w-auto">
+                        Not available
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      <Card padding="md" className="mt-8 !p-5 bg-health-50/40 dark:bg-health-950/20 border-health-100 dark:border-health-900/30">
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">
+          How it works
+        </h3>
+        <ol className="grid sm:grid-cols-3 gap-4 text-sm text-slate-600 dark:text-slate-400">
+          <li>
+            <span className="font-semibold text-health-700 dark:text-health-400">1.</span> Book a
+            telemedicine slot with your doctor
+          </li>
+          <li>
+            <span className="font-semibold text-health-700 dark:text-health-400">2.</span> Join a few
+            minutes before your scheduled time
+          </li>
+          <li>
+            <span className="font-semibold text-health-700 dark:text-health-400">3.</span> Chat and
+            video consult — prescriptions appear under Pharmacy
+          </li>
+        </ol>
+      </Card>
+    </PageContainer>
   );
 };
 

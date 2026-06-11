@@ -849,6 +849,7 @@ import React, {
   useCallback,
 } from "react";
 import { useToast } from "./ToastContext";
+import * as emergencyApi from "../api/emergency";
 
 /* =======================
    CONTEXT SETUP
@@ -883,6 +884,7 @@ export const EmergencyProvider = ({ children }) => {
   const [countdown, setCountdown] = useState(5);
   const [countdownActive, setCountdownActive] = useState(false);
   const [countdownInterval, setCountdownInterval] = useState(null);
+  const [activeEmergencyLogId, setActiveEmergencyLogId] = useState(null);
 
   /* =======================
      DEFAULT DATA
@@ -975,8 +977,25 @@ export const EmergencyProvider = ({ children }) => {
      FETCH INITIAL DATA
   ======================= */
   const fetchEmergencyData = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
+      const [contacts, medical, services] = await Promise.all([
+        emergencyApi.fetchEmergencyContacts().catch(() => getDefaultContacts()),
+        emergencyApi.fetchEmergencyMedicalInfo().catch(() => getDefaultMedicalInfo()),
+        emergencyApi.fetchEmergencyServices().catch(() => getDefaultServices()),
+      ]);
+
+      setEmergencyContacts(contacts.length ? contacts : getDefaultContacts());
+      setMedicalInfo(medical || getDefaultMedicalInfo());
+      setEmergencyServices(services.length ? services : getDefaultServices());
+    } catch (error) {
+      console.error("Emergency data load error:", error);
       setEmergencyContacts(getDefaultContacts());
       setMedicalInfo(getDefaultMedicalInfo());
       setEmergencyServices(getDefaultServices());
@@ -995,35 +1014,71 @@ export const EmergencyProvider = ({ children }) => {
      UPDATE MEDICAL INFO ✅
   ======================= */
   const updateMedicalInfo = useCallback(async (data) => {
-    setMedicalInfo(data);
-    addToast("Medical information updated", "success");
+    try {
+      const updated = await emergencyApi.updateEmergencyMedicalInfo(data);
+      setMedicalInfo(updated);
+      addToast("Medical information updated", "success");
+      return updated;
+    } catch (error) {
+      addToast(error.message || "Failed to update medical information", "error");
+      throw error;
+    }
   }, [addToast]);
 
   /* =======================
      UPDATE CONTACTS ✅
   ======================= */
   const updateEmergencyContacts = useCallback(async (contacts) => {
-    setEmergencyContacts(contacts);
-    addToast("Emergency contacts updated", "success");
-  }, [addToast]);
+    const sanitized = contacts
+      .filter((c) => c.name?.trim() && c.phone?.trim())
+      .map((c) => ({
+        ...c,
+        name: c.name.trim(),
+        phone: c.phone.trim(),
+        relationship: c.relationship || "Family",
+        is_primary: Boolean(c.is_primary),
+      }));
 
-  /* =======================
-     NOTIFY CONTACTS
-  ======================= */
-  const notifyEmergencyContacts = useCallback(async () => {
-    // Stub – backend can be plugged later
-    return true;
-  }, []);
+    if (!sanitized.length) {
+      addToast("Add at least one contact with name and phone", "warning");
+      return;
+    }
+
+    try {
+      const updated = await emergencyApi.updateEmergencyContacts(sanitized);
+      setEmergencyContacts(updated);
+      addToast("Emergency contacts updated", "success");
+      return updated;
+    } catch (error) {
+      addToast(error.message || "Failed to update emergency contacts", "error");
+      throw error;
+    }
+  }, [addToast]);
 
   /* =======================
      TRIGGER EMERGENCY
   ======================= */
   const triggerEmergency = useCallback(async () => {
-    setEmergencyMode(true);
-    setEmergencyInProgress(true);
-    await notifyEmergencyContacts();
-    addToast("Emergency triggered! Help is on the way.", "success");
-  }, [notifyEmergencyContacts, addToast]);
+    try {
+      setEmergencyMode(true);
+      setEmergencyInProgress(true);
+
+      const result = await emergencyApi.triggerEmergency({
+        location: currentLocation,
+        medical_info: medicalInfo,
+      });
+
+      if (result?.id) {
+        setActiveEmergencyLogId(result.id);
+      }
+
+      addToast("Emergency triggered! Help is on the way.", "success");
+      return result;
+    } catch (error) {
+      addToast(error.message || "Failed to trigger emergency", "error");
+      window.location.href = "tel:112";
+    }
+  }, [currentLocation, medicalInfo, addToast]);
 
   /* =======================
      COUNTDOWN
@@ -1059,29 +1114,63 @@ export const EmergencyProvider = ({ children }) => {
   ======================= */
   const getNearbyHospitals = useCallback(async () => {
     if (!currentLocation) return [];
-    return [
-      {
-        name: "Nearby Hospital",
-        latitude: currentLocation.latitude,
-        longitude: currentLocation.longitude,
-        distance: "1.0 km",
-      },
-    ];
+    try {
+      return await emergencyApi.fetchNearbyHospitals(
+        currentLocation.latitude,
+        currentLocation.longitude
+      );
+    } catch (error) {
+      console.error("Nearby hospitals error:", error);
+      return [];
+    }
   }, [currentLocation]);
 
-  const endEmergency = useCallback(() => {
-    setEmergencyMode(false);
-    setEmergencyInProgress(false);
-    addToast("Emergency ended", "success");
-  }, [addToast]);
+  const endEmergency = useCallback(async () => {
+    try {
+      if (activeEmergencyLogId) {
+        await emergencyApi.endEmergency(activeEmergencyLogId);
+      }
+      setEmergencyMode(false);
+      setEmergencyInProgress(false);
+      setActiveEmergencyLogId(null);
+      addToast("Emergency ended", "success");
+    } catch (error) {
+      addToast(error.message || "Failed to end emergency", "error");
+    }
+  }, [activeEmergencyLogId, addToast]);
 
-  const connectEmergencyDoctor = useCallback(() => {
-    addToast("Connecting to emergency doctor…", "info");
-  }, [addToast]);
+  const connectEmergencyDoctor = useCallback(async () => {
+    try {
+      const result = await emergencyApi.connectEmergencyDoctor({
+        location: currentLocation,
+        medical_info: medicalInfo,
+      });
+      addToast("Connecting to emergency doctor…", "success");
+      return result;
+    } catch (error) {
+      addToast(error.message || "Could not connect to doctor", "error");
+    }
+  }, [currentLocation, medicalInfo, addToast]);
 
-  const dispatchAmbulance = useCallback(() => {
-    window.location.href = "tel:108";
-  }, []);
+  const dispatchAmbulance = useCallback(async (hospitalId = null) => {
+    if (!currentLocation) {
+      addToast("Enable location before dispatching ambulance", "warning");
+      return;
+    }
+
+    try {
+      await emergencyApi.dispatchAmbulance({
+        location: currentLocation,
+        medical_info: medicalInfo,
+        hospital_id: hospitalId,
+        estimated_arrival: "10-15 minutes",
+      });
+      addToast("Ambulance dispatched! ETA: 10-15 minutes", "success");
+    } catch (error) {
+      addToast("Could not dispatch ambulance. Calling 108…", "warning");
+      window.location.href = "tel:108";
+    }
+  }, [currentLocation, medicalInfo, addToast]);
 
   /* =======================
      CONTEXT VALUE ✅

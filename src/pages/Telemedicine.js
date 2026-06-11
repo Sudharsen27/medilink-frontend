@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import {
+  fetchAppointmentById,
+  startConsultation,
+  endConsultation,
+  fetchChatHistory,
+  sendChatMessage,
+} from '../api/telemedicine';
 
 const Telemedicine = ({ user }) => {
   const { appointmentId } = useParams();
@@ -13,40 +20,22 @@ const Telemedicine = ({ user }) => {
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [permissionError, setPermissionError] = useState(false);
+  const [consultationStartedAt, setConsultationStartedAt] = useState(null);
+  const [loadError, setLoadError] = useState('');
 
   const localVideoRef = useRef();
   const remoteVideoRef = useRef();
   const messagesEndRef = useRef();
 
-  const fetchAppointmentDetails = useCallback(async () => {
-    try {
-      // Mock appointment data for testing
-      const mockAppointment = {
-        id: appointmentId,
-        doctor_name: "Dr. Sarah Johnson",
-        doctor_specialization: "Cardiology",
-        appointment_date: new Date().toISOString().split('T')[0],
-        appointment_time: "14:30",
-        reason: "Heart palpitations follow-up"
-      };
-      setAppointment(mockAppointment);
-    } catch (error) {
-      console.error('Error fetching appointment:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [appointmentId]);
+  const mapChatMessage = useCallback((row) => ({
+    id: row.id,
+    sender: row.sender_name || (row.sender_type === 'patient' ? user?.name : 'Doctor'),
+    text: row.message,
+    timestamp: new Date(row.sent_at).toLocaleTimeString(),
+    isMine: row.sender_type === 'patient',
+  }), [user?.name]);
 
-  useEffect(() => {
-    fetchAppointmentDetails();
-    initializeCall();
-  }, [fetchAppointmentDetails]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const initializeCall = async () => {
+  const initializeCall = useCallback(async () => {
     try {
       // Get user media
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -61,10 +50,9 @@ const Telemedicine = ({ user }) => {
       setCallStatus('waiting');
       setPermissionError(false);
 
-      // Simulate doctor joining after 3 seconds
-      setTimeout(() => {
-        setCallStatus('connected');
-      }, 3000);
+      const session = await startConsultation(appointmentId);
+      setConsultationStartedAt(Date.now());
+      setCallStatus(session?.consultation ? 'connected' : 'waiting');
 
     } catch (error) {
       console.error('Error accessing media devices:', error);
@@ -76,7 +64,30 @@ const Telemedicine = ({ user }) => {
         setCallStatus('connected');
       }, 3000);
     }
-  };
+  }, [appointmentId]);
+
+  const fetchAppointmentDetails = useCallback(async () => {
+    try {
+      const data = await fetchAppointmentById(appointmentId);
+      setAppointment(data);
+      const history = await fetchChatHistory(appointmentId);
+      setMessages(history.map(mapChatMessage));
+    } catch (error) {
+      console.error('Error fetching appointment:', error);
+      setLoadError('Could not load this consultation.');
+    } finally {
+      setLoading(false);
+    }
+  }, [appointmentId, mapChatMessage]);
+
+  useEffect(() => {
+    fetchAppointmentDetails();
+    initializeCall();
+  }, [fetchAppointmentDetails, initializeCall]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const requestPermissionsAgain = async () => {
     try {
@@ -102,16 +113,23 @@ const Telemedicine = ({ user }) => {
     }
   };
 
-  const sendMessage = () => {
-    if (newMessage.trim()) {
-      const message = {
-        id: Date.now(),
-        sender: user.name,
-        text: newMessage,
-        timestamp: new Date().toLocaleTimeString()
-      };
-      setMessages(prev => [...prev, message]);
+  const sendMessage = async () => {
+    const text = newMessage.trim();
+    if (!text || callStatus === 'ended') return;
+
+    try {
+      const saved = await sendChatMessage(appointmentId, text, 'patient');
+      setMessages((prev) => [
+        ...prev,
+        mapChatMessage({
+          ...saved,
+          sender_name: user?.name,
+          sender_type: 'patient',
+        }),
+      ]);
       setNewMessage('');
+    } catch (error) {
+      console.error('Chat send failed:', error);
     }
   };
 
@@ -133,10 +151,21 @@ const Telemedicine = ({ user }) => {
     }
   };
 
-  const endCall = () => {
+  const endCall = async () => {
     if (localStream) {
       localStream.getTracks().forEach(track => track.stop());
     }
+
+    const duration = consultationStartedAt
+      ? Math.round((Date.now() - consultationStartedAt) / 1000)
+      : null;
+
+    try {
+      await endConsultation(appointmentId, { duration, notes: 'Patient ended call' });
+    } catch (error) {
+      console.error('End consultation error:', error);
+    }
+
     setCallStatus('ended');
   };
 
@@ -172,6 +201,12 @@ const Telemedicine = ({ user }) => {
             </p>
           </div>
         </div>
+
+        {loadError && (
+          <div className="bg-rose-900 border border-rose-700 rounded-lg p-4 mb-6 text-rose-100">
+            {loadError}
+          </div>
+        )}
 
         {/* Permission Error Banner */}
         {permissionError && (
@@ -308,12 +343,12 @@ const Telemedicine = ({ user }) => {
                   <div
                     key={message.id}
                     className={`mb-3 ${
-                      message.sender === user.name ? 'text-right' : 'text-left'
+                      message.isMine ? 'text-right' : 'text-left'
                     }`}
                   >
                     <div
                       className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                        message.sender === user.name
+                        message.isMine
                           ? 'bg-blue-600 text-white'
                           : 'bg-gray-700 text-white'
                       }`}
