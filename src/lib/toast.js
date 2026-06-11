@@ -45,7 +45,7 @@ const PremiumToast = ({ t, message, type }) => {
       role="status"
       aria-live="polite"
       className={`
-        pointer-events-auto relative w-full min-w-0
+        pointer-events-auto relative w-full min-w-[18rem] max-w-full
         flex items-center gap-3 pl-4 pr-3 py-3.5 rounded-2xl
         bg-white dark:bg-slate-900
         border shadow-soft ${variant.border}

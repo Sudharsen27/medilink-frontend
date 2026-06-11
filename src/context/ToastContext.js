@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { Toaster } from "react-hot-toast";
 import notify, {
   showSuccess,
@@ -10,6 +16,20 @@ import notify, {
 } from "../lib/toast";
 
 const ToastContext = createContext(null);
+
+const useToastPosition = () => {
+  const [position, setPosition] = useState("top-center");
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)");
+    const sync = () => setPosition(media.matches ? "top-right" : "top-center");
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  return position;
+};
 
 /**
  * Backward-compatible hook — existing code uses addToast(message, type).
@@ -24,6 +44,9 @@ export const useToast = () => {
 };
 
 export const ToastProvider = ({ children }) => {
+  const position = useToastPosition();
+  const isDesktop = position === "top-right";
+
   const addToast = useCallback((message, type = "info", options) => {
     return notify(message, type, options);
   }, []);
@@ -46,12 +69,14 @@ export const ToastProvider = ({ children }) => {
     <ToastContext.Provider value={value}>
       {children}
       <Toaster
-        position="top-center"
+        position={position}
         reverseOrder={false}
         gutter={10}
-        containerClassName="medilink-toaster"
+        containerClassName={`medilink-toaster${isDesktop ? " medilink-toaster--desktop" : ""}`}
         containerStyle={{
-          top: "max(0.75rem, env(safe-area-inset-top))",
+          top: isDesktop
+            ? "1.25rem"
+            : "max(0.75rem, env(safe-area-inset-top))",
         }}
         toastOptions={{
           duration: 4000,
@@ -62,7 +87,8 @@ export const ToastProvider = ({ children }) => {
               padding: 0,
               margin: 0,
               width: "100%",
-              maxWidth: "min(22rem, calc(100vw - 2rem))",
+              minWidth: "min(20rem, calc(100vw - 2rem))",
+              maxWidth: "min(24rem, calc(100vw - 2rem))",
             },
           },
         }}

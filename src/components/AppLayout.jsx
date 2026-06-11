@@ -54,7 +54,7 @@ const AppLayout = ({ user, onLogout }) => {
         {!hideChrome && <MobileHeader unreadCount={unreadCount} />}
 
         <main
-          className={`flex-1 min-w-0 ${
+          className={`flex-1 min-w-0 desktop-main ${
             hideChrome ? "" : "mobile-main-content"
           }`}
         >
