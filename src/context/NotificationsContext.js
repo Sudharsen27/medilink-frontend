@@ -15,8 +15,6 @@ export const useNotifications = () => {
 };
 
 export const NotificationsProvider = ({ children }) => {
-  const API_BASE = API_BASE_URL;
-  
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -49,7 +47,7 @@ export const NotificationsProvider = ({ children }) => {
         return;
       }
 
-      const response = await fetch(`${API_BASE}/api/notifications`, {
+      const response = await fetch(`${API_BASE_URL}/api/notifications`, {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -76,7 +74,7 @@ export const NotificationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [API_BASE, getToken, updateUnreadCount]);
+  }, [getToken, updateUnreadCount]);
 
   // Initialize notifications on mount
   useEffect(() => {
@@ -105,7 +103,7 @@ export const NotificationsProvider = ({ children }) => {
       const token = getToken();
       if (!token) return;
 
-      const response = await fetch(`${API_BASE}/api/notifications/${id}/read`, {
+      const response = await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
         method: "PUT",
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -137,7 +135,7 @@ export const NotificationsProvider = ({ children }) => {
       const token = getToken();
       if (!token) return;
 
-      const response = await fetch(`${API_BASE}/api/notifications/read-all`, {
+      const response = await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
         method: "PUT",
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -174,7 +172,7 @@ export const NotificationsProvider = ({ children }) => {
       const token = getToken();
       if (!token) return;
 
-      const response = await fetch(`${API_BASE}/api/notifications/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/notifications/${id}`, {
         method: "DELETE",
         headers: { 
           'Authorization': `Bearer ${token}`,

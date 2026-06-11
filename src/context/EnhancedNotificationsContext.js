@@ -51,7 +51,7 @@
 //     }
 
 //     try {
-//       const res = await fetch(`${API_BASE}/api/notifications`, {
+//       const res = await fetch(`${API_BASE_URL}/api/notifications`, {
 //         headers: {
 //           Authorization: `Bearer ${token}`,
 //         },
@@ -91,7 +91,7 @@
 //     const token = localStorage.getItem("token");
 //     if (!token) return;
 
-//     await fetch(`${API_BASE}/api/notifications/${id}/read`, {
+//     await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
 //       method: "PUT",
 //       headers: { Authorization: `Bearer ${token}` },
 //     });
@@ -109,7 +109,7 @@
 //     const token = localStorage.getItem("token");
 //     if (!token) return;
 
-//     await fetch(`${API_BASE}/api/notifications/read-all`, {
+//     await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
 //       method: "PUT",
 //       headers: { Authorization: `Bearer ${token}` },
 //     });
@@ -122,7 +122,7 @@
 //     const token = localStorage.getItem("token");
 //     if (!token) return;
 
-//     await fetch(`${API_BASE}/api/notifications/${id}`, {
+//     await fetch(`${API_BASE_URL}/api/notifications/${id}`, {
 //       method: "DELETE",
 //       headers: { Authorization: `Bearer ${token}` },
 //     });
@@ -178,8 +178,6 @@ export const EnhancedNotificationsProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE = API_BASE_URL;
-
   // 🔔 Notification sound (loaded once)
   const soundRef = useRef(null);
   const prevCountRef = useRef(0);
@@ -210,7 +208,7 @@ export const EnhancedNotificationsProvider = ({ children }) => {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/notifications`, {
+      const res = await fetch(`${API_BASE_URL}/api/notifications`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -259,7 +257,7 @@ export const EnhancedNotificationsProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    await fetch(`${API_BASE}/api/notifications/${id}/read`, {
+    await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -278,7 +276,7 @@ export const EnhancedNotificationsProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    await fetch(`${API_BASE}/api/notifications/read-all`, {
+    await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -297,7 +295,7 @@ export const EnhancedNotificationsProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    await fetch(`${API_BASE}/api/notifications/${id}`, {
+    await fetch(`${API_BASE_URL}/api/notifications/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });

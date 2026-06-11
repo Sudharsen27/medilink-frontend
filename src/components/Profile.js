@@ -422,15 +422,13 @@ export default function Profile({ user, setUser }) {
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const API_URL = API_BASE_URL;
-
   // ✅ Fetch user profile
   useEffect(() => {
     if (!user) return;
     setLoading(true);
 
     axios
-      .get(`${API_URL}/api/users/${user.id}`)
+      .get(`${API_BASE_URL}/api/users/${user.id}`)
       .then((res) => {
         const data = res.data || {};
         setForm({
@@ -482,7 +480,7 @@ export default function Profile({ user, setUser }) {
     setMsg('');
 
     try {
-      const res = await axios.put(`${API_URL}/api/users/${user.id}`, formData, {
+      const res = await axios.put(`${API_BASE_URL}/api/users/${user.id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
