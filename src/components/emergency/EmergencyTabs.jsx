@@ -10,7 +10,7 @@ import {
   Navigation,
   Ambulance,
 } from "lucide-react";
-import Card, { CardHeader } from "../../ui/Card";
+import Card from "../../ui/Card";
 import Button from "../../ui/Button";
 import Badge from "../../ui/Badge";
 import EmptyState from "../../ui/EmptyState";
