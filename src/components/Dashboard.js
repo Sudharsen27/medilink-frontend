@@ -48,22 +48,27 @@ const Dashboard = ({ user }) => {
     };
   }, [appointments]);
 
-  const loadAppointments = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response =
-        user?.role === "admin"
-          ? await fetchAllAppointments()
-          : await fetchAppointments();
-      setAppointments(Array.isArray(response) ? response : []);
-      addToast("Data refreshed successfully", "success");
-    } catch (error) {
-      console.error("Failed to fetch appointments:", error);
-      addToast("Failed to load appointments", "error");
-    } finally {
-      setLoading(false);
-    }
-  }, [user, addToast]);
+  const loadAppointments = useCallback(
+    async ({ notifySuccess = false } = {}) => {
+      try {
+        setLoading(true);
+        const response =
+          user?.role === "admin"
+            ? await fetchAllAppointments()
+            : await fetchAppointments();
+        setAppointments(Array.isArray(response) ? response : []);
+        if (notifySuccess) {
+          addToast("Data refreshed successfully", "success");
+        }
+      } catch (error) {
+        console.error("Failed to fetch appointments:", error);
+        addToast("Failed to load appointments", "error");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [user, addToast]
+  );
 
   useEffect(() => {
     let result = appointments;
@@ -90,7 +95,7 @@ const Dashboard = ({ user }) => {
   }, [appointments, searchTerm, statusFilter, dateRange]);
 
   useEffect(() => {
-    loadAppointments();
+    loadAppointments({ notifySuccess: refreshTrigger > 0 });
   }, [loadAppointments, refreshTrigger]);
 
   const handleAddAppointment = useCallback(
@@ -179,9 +184,9 @@ const Dashboard = ({ user }) => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-5rem)]">
+    <div className="min-h-[calc(100vh-3.5rem)] lg:min-h-screen">
       {/* Dashboard header */}
-      <div className="glass-panel border-x-0 border-t-0 rounded-none sticky top-16 lg:top-20 z-30">
+      <div className="glass-panel border-x-0 border-t-0 rounded-none sticky top-14 lg:top-0 z-30">
         <PageContainer className="py-4 lg:py-5">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>

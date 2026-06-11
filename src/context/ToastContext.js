@@ -1,62 +1,72 @@
-// src/context/ToastContext.js
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { v4 as uuidv4 } from 'uuid'; // ✅ Generates guaranteed unique IDs
+import React, { createContext, useContext, useCallback } from "react";
+import { Toaster } from "react-hot-toast";
+import notify, {
+  showSuccess,
+  showError,
+  showWarning,
+  showInfo,
+  dismissToast,
+  dismissAllToasts,
+} from "../lib/toast";
 
-// Create the context
-const ToastContext = createContext();
+const ToastContext = createContext(null);
 
-// Custom hook to access toast functions
-export const useToast = () => useContext(ToastContext);
+/**
+ * Backward-compatible hook — existing code uses addToast(message, type).
+ * Also exposes typed helpers: success, error, warning, info.
+ */
+export const useToast = () => {
+  const context = useContext(ToastContext);
+  if (!context) {
+    throw new Error("useToast must be used within ToastProvider");
+  }
+  return context;
+};
 
-// Provider component
 export const ToastProvider = ({ children }) => {
-  const [toasts, setToasts] = useState([]);
-
-  // ✅ Add a toast notification
-  const addToast = useCallback((message, type = 'info') => {
-    const id = uuidv4(); // unique ID per toast
-
-    setToasts((prev) => [...prev, { id, message, type }]);
-
-    // Auto-remove toast after 3 seconds
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((toast) => toast.id !== id));
-    }, 3000);
+  const addToast = useCallback((message, type = "info", options) => {
+    return notify(message, type, options);
   }, []);
 
-  // ✅ Manually remove a toast
   const removeToast = useCallback((id) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    dismissToast(id);
   }, []);
+
+  const value = {
+    addToast,
+    removeToast,
+    dismissAll: dismissAllToasts,
+    success: showSuccess,
+    error: showError,
+    warning: showWarning,
+    info: showInfo,
+  };
 
   return (
-    <ToastContext.Provider value={{ addToast, removeToast }}>
+    <ToastContext.Provider value={value}>
       {children}
-
-      <div
-        className="fixed bottom-5 right-5 flex flex-col gap-2 z-[100] max-w-sm"
-        role="region"
-        aria-label="Notifications"
-        aria-live="polite"
-      >
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            role="status"
-            className={`px-4 py-3 rounded-xl shadow-glass text-sm font-medium text-white backdrop-blur-sm border border-white/20 animate-slide-up ${
-              toast.type === "success"
-                ? "bg-health-600/95"
-                : toast.type === "error"
-                ? "bg-clinical-rose/95"
-                : toast.type === "info"
-                ? "bg-clinical-blue/95"
-                : "bg-slate-600/95"
-            }`}
-          >
-            {toast.message}
-          </div>
-        ))}
-      </div>
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        gutter={10}
+        containerClassName="medilink-toaster"
+        containerStyle={{
+          top: "max(0.75rem, env(safe-area-inset-top))",
+        }}
+        toastOptions={{
+          duration: 4000,
+          custom: {
+            style: {
+              background: "transparent",
+              boxShadow: "none",
+              padding: 0,
+              margin: 0,
+              width: "100%",
+              maxWidth: "min(22rem, calc(100vw - 2rem))",
+            },
+          },
+        }}
+      />
     </ToastContext.Provider>
   );
 };

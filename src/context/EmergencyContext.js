@@ -938,7 +938,36 @@ export const EmergencyProvider = ({ children }) => {
           longitude: pos.coords.longitude,
         });
       },
-      () => addToast("Location permission required", "warning")
+      () => {
+        /* Location is optional until the user opens emergency features */
+      }
+    );
+  }, []);
+
+  const requestLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      addToast("Geolocation is not supported on this device", "error");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCurrentLocation({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        });
+        addToast("Location enabled for emergency services", "success");
+      },
+      (err) => {
+        const blocked = err.code === 1;
+        addToast(
+          blocked
+            ? "Location blocked — enable it in your browser site settings"
+            : "Could not get your location. Try again.",
+          "warning"
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   }, [addToast]);
 
@@ -1046,6 +1075,14 @@ export const EmergencyProvider = ({ children }) => {
     addToast("Emergency ended", "success");
   }, [addToast]);
 
+  const connectEmergencyDoctor = useCallback(() => {
+    addToast("Connecting to emergency doctor…", "info");
+  }, [addToast]);
+
+  const dispatchAmbulance = useCallback(() => {
+    window.location.href = "tel:108";
+  }, []);
+
   /* =======================
      CONTEXT VALUE ✅
   ======================= */
@@ -1072,7 +1109,10 @@ export const EmergencyProvider = ({ children }) => {
 
         getNearbyHospitals,
         endEmergency,
+        connectEmergencyDoctor,
+        dispatchAmbulance,
         initializeLocationTracking,
+        requestLocation,
       }}
     >
       {children}

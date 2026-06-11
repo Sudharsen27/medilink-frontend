@@ -1,202 +1,19 @@
-
-
-// import React, { useState, useRef, useEffect } from 'react';
-// import { useNotifications } from '../context/NotificationsContext';
-// import './NotificationsBell.css';
-
-// const NotificationsBell = () => {
-//   const [isOpen, setIsOpen] = useState(false);
-//   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
-//   const dropdownRef = useRef(null);
-
-//   // Close dropdown when clicking outside
-//   useEffect(() => {
-//     const handleClickOutside = (event) => {
-//       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-//         setIsOpen(false);
-//       }
-//     };
-//     document.addEventListener('mousedown', handleClickOutside);
-//     return () => document.removeEventListener('mousedown', handleClickOutside);
-//   }, []);
-
-//   const handleNotificationClick = (notification) => {
-//     if (!notification.read) markAsRead(notification.id);
-//     handleNotificationAction(notification);
-//     setIsOpen(false);
-//   };
-
-//   const handleNotificationAction = (notification) => {
-//     switch (notification.type) {
-//       case 'appointment':
-//         window.location.href = '/appointments';
-//         break;
-//       case 'prescription':
-//         window.location.href = '/prescriptions';
-//         break;
-//       case 'medical_record':
-//         window.location.href = '/medical-records';
-//         break;
-//       default:
-//         break;
-//     }
-//   };
-
-//   const formatTime = (timestamp) => {
-//     const now = new Date();
-//     const time = new Date(timestamp);
-//     const diffInMinutes = Math.floor((now - time) / (1000 * 60));
-
-//     if (diffInMinutes < 1) return 'Just now';
-//     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-//     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
-
-//     return time.toLocaleDateString();
-//   };
-
-//   const getNotificationIcon = (type) => {
-//     const icons = {
-//       appointment: '📅',
-//       prescription: '💊',
-//       medical_record: '📋',
-//       system: '🔧',
-//       reminder: '⏰',
-//       emergency: '🚨',
-//     };
-//     return icons[type] || '🔔';
-//   };
-
-//   return (
-//     <div className="notifications-bell" ref={dropdownRef}>
-
-//       {/* 🔔 BELL BUTTON */}
-//       <button
-//         className="notifications-trigger"
-//         onClick={() => setIsOpen(!isOpen)}
-//         aria-label={`Notifications (${unreadCount} unread)`}
-//         style={{
-//           background: 'transparent',
-//           padding: '5px',
-//           border: 'none',
-//           cursor: 'pointer',
-//         }}
-//       >
-//         {/* 🔔 SMALL BELL ICON */}
-//         <span className="bell-icon" style={{ fontSize: '16px' }}>
-//           🔔 ({unreadCount})
-//         </span>
-
-//         {unreadCount > 0 && (
-//           <span
-//             className="notification-badge"
-//             style={{
-//               background: 'red',
-//               color: 'white',
-//               fontSize: '10px',
-//               padding: '2px 5px',
-//               borderRadius: '50%',
-//               marginLeft: '3px',
-//             }}
-//           >
-//             {unreadCount > 99 ? '99+' : unreadCount}
-//           </span>
-//         )}
-//       </button>
-
-//       {/* 🔻 DROPDOWN */}
-//       {isOpen && (
-//         <div className="notifications-dropdown" style={{ background: 'white' }}>
-//           <div className="notifications-header">
-//             <h3>Notifications</h3>
-
-//             <div className="notifications-actions">
-//               {unreadCount > 0 && (
-//                 <button onClick={markAllAsRead} className="mark-all-read-btn">
-//                   Mark all read
-//                 </button>
-//               )}
-//               <button
-//                 onClick={() => setIsOpen(false)}
-//                 className="close-dropdown-btn"
-//                 aria-label="Close notifications"
-//               >
-//                 ×
-//               </button>
-//             </div>
-//           </div>
-
-//           {/* LIST */}
-//           <div className="notifications-list">
-//             {notifications.length === 0 ? (
-//               <div className="no-notifications">
-//                 <div className="no-notifications-icon">🔔</div>
-//                 <p>No notifications yet</p>
-//                 <span>We'll notify you when something important happens</span>
-//               </div>
-//             ) : (
-//               notifications.slice(0, 10).map((notification) => (
-//                 <div
-//                   key={notification.id}
-//                   className={`notification-item ${!notification.read ? 'notification-unread' : ''}`}
-//                   onClick={() => handleNotificationClick(notification)}
-//                   style={{
-//                     borderBottom: '1px solid #eee',
-//                     padding: '10px',
-//                     cursor: 'pointer',
-//                   }}
-//                 >
-//                   <div className="notification-icon">
-//                     {getNotificationIcon(notification.type)}
-//                   </div>
-
-//                   <div className="notification-content">
-//                     <p className="notification-message">{notification.message}</p>
-//                     <span className="notification-time">
-//                       {formatTime(notification.created_at)}
-//                     </span>
-//                   </div>
-
-//                   <button
-//                     onClick={(e) => {
-//                       e.stopPropagation();
-//                       deleteNotification(notification.id);
-//                     }}
-//                     className="delete-notification-btn"
-//                     aria-label="Delete notification"
-//                   >
-//                     ×
-//                   </button>
-//                 </div>
-//               ))
-//             )}
-//           </div>
-
-//           {notifications.length > 0 && (
-//             <div className="notifications-footer">
-//               <a href="/notifications" className="view-all-link">
-//                 View all notifications
-//               </a>
-//             </div>
-//           )}
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default NotificationsBell;
-
-
 import React, { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bell, CheckCheck, X, ArrowRight } from "lucide-react";
+import { useEnhancedNotifications } from "../context/EnhancedNotificationsContext";
 import {
-  useEnhancedNotifications,
-} from "../context/EnhancedNotificationsContext";
-import "./NotificationsBell.css";
+  getNotificationMeta,
+  formatNotificationTime,
+  isNotificationUnread,
+} from "../lib/notificationUtils";
 
-const NotificationsBell = () => {
+const NotificationsBell = ({ className = "" }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
-  // ✅ UPDATED HOOK
   const {
     notifications,
     unreadCount,
@@ -205,9 +22,6 @@ const NotificationsBell = () => {
     deleteNotification,
   } = useEnhancedNotifications();
 
-  const dropdownRef = useRef(null);
-
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -218,173 +32,145 @@ const NotificationsBell = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleNotificationClick = (notification) => {
-    if (!notification.read) markAsRead(notification.id);
-    handleNotificationAction(notification);
+  const handleOpen = (notification) => {
+    if (isNotificationUnread(notification)) markAsRead(notification.id);
+    const meta = getNotificationMeta(notification);
     setIsOpen(false);
+    navigate(meta.route(notification));
   };
 
-  const handleNotificationAction = (notification) => {
-    switch (notification.type) {
-      case "appointment":
-        window.location.href = "/appointments";
-        break;
-      case "prescription":
-        window.location.href = "/prescriptions";
-        break;
-      case "medical_record":
-        window.location.href = "/medical-records";
-        break;
-      default:
-        break;
-    }
-  };
-
-  const formatTime = (timestamp) => {
-    const now = new Date();
-    const time = new Date(timestamp);
-    const diffInMinutes = Math.floor((now - time) / (1000 * 60));
-
-    if (diffInMinutes < 1) return "Just now";
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-    if (diffInMinutes < 1440)
-      return `${Math.floor(diffInMinutes / 60)}h ago`;
-
-    return time.toLocaleDateString();
-  };
-
-  const getNotificationIcon = (type) => {
-    const icons = {
-      appointment: "📅",
-      prescription: "💊",
-      medical_record: "📋",
-      system: "🔧",
-      reminder: "⏰",
-      emergency: "🚨",
-    };
-    return icons[type] || "🔔";
-  };
+  const preview = notifications.slice(0, 5);
 
   return (
-    <div className="notifications-bell" ref={dropdownRef}>
-      {/* Bell Icon */}
+    <div className={`relative ${className}`} ref={dropdownRef}>
       <button
-        className="notifications-trigger"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label={`Notifications (${unreadCount} unread)`}
-        style={{
-          background: "transparent",
-          padding: "5px",
-          border: "none",
-          cursor: "pointer",
-        }}
+        type="button"
+        onClick={() => setIsOpen((v) => !v)}
+        className="relative p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ""}`}
+        aria-expanded={isOpen}
       >
-        <span className="bell-icon" style={{ fontSize: "16px" }}>
-          🔔 ({unreadCount})
-        </span>
-
+        <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
-          <span
-            className="notification-badge"
-            style={{
-              background: "red",
-              color: "white",
-              fontSize: "10px",
-              padding: "2px 5px",
-              borderRadius: "50%",
-              marginLeft: "3px",
-            }}
-          >
+          <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 bg-clinical-rose text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </button>
 
-      {/* Dropdown */}
-      {isOpen && (
-        <div
-          className="notifications-dropdown"
-          style={{ background: "white" }}
-        >
-          <div className="notifications-header">
-            <h3>Notifications</h3>
-
-            <div className="notifications-actions">
-              {unreadCount > 0 && (
-                <button onClick={markAllAsRead} className="mark-all-read-btn">
-                  Mark all read
-                </button>
-              )}
-              <button
-                onClick={() => setIsOpen(false)}
-                className="close-dropdown-btn"
-                aria-label="Close notifications"
-              >
-                ×
-              </button>
-            </div>
-          </div>
-
-          <div className="notifications-list">
-            {notifications.length === 0 ? (
-              <div className="no-notifications">
-                <div className="no-notifications-icon">🔔</div>
-                <p>No notifications yet</p>
-                <span>
-                  We'll notify you when something important happens
-                </span>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 mt-2 w-[min(100vw-2rem,22rem)] rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 shadow-glass-lg overflow-hidden z-50"
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200/60 dark:border-slate-700/60 bg-slate-50/80 dark:bg-slate-800/40">
+              <div>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                  Notifications
+                </p>
+                <p className="text-xs text-slate-500">
+                  {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
+                </p>
               </div>
-            ) : (
-              notifications.slice(0, 10).map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`notification-item ${
-                    !notification.read ? "notification-unread" : ""
-                  }`}
-                  onClick={() => handleNotificationClick(notification)}
-                  style={{
-                    borderBottom: "1px solid #eee",
-                    padding: "10px",
-                    cursor: "pointer",
-                  }}
-                >
-                  <div className="notification-icon">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-
-                  <div className="notification-content">
-                    <p className="notification-message">
-                      {notification.message}
-                    </p>
-                    <span className="notification-time">
-                      {formatTime(notification.created_at)}
-                    </span>
-                  </div>
-
+              <div className="flex items-center gap-1">
+                {unreadCount > 0 && (
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteNotification(notification.id);
-                    }}
-                    className="delete-notification-btn"
-                    aria-label="Delete notification"
+                    type="button"
+                    onClick={markAllAsRead}
+                    className="p-2 rounded-lg text-health-600 hover:bg-health-50 dark:hover:bg-health-950/40 transition-colors"
+                    title="Mark all read"
+                    aria-label="Mark all as read"
                   >
-                    ×
+                    <CheckCheck className="w-4 h-4" />
                   </button>
-                </div>
-              ))
-            )}
-          </div>
-
-          {notifications.length > 0 && (
-            <div className="notifications-footer">
-              <a href="/notifications" className="view-all-link">
-                View all notifications
-              </a>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  aria-label="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-          )}
-        </div>
-      )}
+
+            <div className="max-h-80 overflow-y-auto sidebar-scroll">
+              {preview.length === 0 ? (
+                <div className="px-4 py-10 text-center">
+                  <Bell className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500">No notifications yet</p>
+                </div>
+              ) : (
+                preview.map((notification) => {
+                  const meta = getNotificationMeta(notification);
+                  const Icon = meta.icon;
+                  const unread = isNotificationUnread(notification);
+
+                  return (
+                    <div
+                      key={notification.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleOpen(notification)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleOpen(notification);
+                        }
+                      }}
+                      className={`w-full flex gap-3 px-4 py-3 text-left border-b border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer ${
+                        unread ? "bg-health-50/30 dark:bg-health-950/10" : ""
+                      }`}
+                    >
+                      <div
+                        className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${meta.styles.icon}`}
+                      >
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                          {notification.title}
+                        </p>
+                        <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
+                          {notification.message}
+                        </p>
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          {formatNotificationTime(notification.created_at)}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notification.id);
+                        }}
+                        className="shrink-0 p-1 text-slate-300 hover:text-clinical-rose"
+                        aria-label="Delete"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <Link
+              to="/notifications"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-health-700 dark:text-health-400 hover:bg-health-50 dark:hover:bg-health-950/30 transition-colors border-t border-slate-200/60 dark:border-slate-700/60"
+            >
+              Open notification center
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

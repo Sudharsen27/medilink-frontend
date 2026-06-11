@@ -1,17 +1,28 @@
-import React, { useState } from 'react';
-import { useFavorites } from '../context/FavoritesContext';
-import './FavoriteButton.css';
+import React, { useState } from "react";
+import { Heart } from "lucide-react";
+import { motion } from "framer-motion";
+import { useFavorites } from "../context/FavoritesContext";
 
-const FavoriteButton = ({ doctor, size = 'medium', showLabel = false }) => {
+const sizeClasses = {
+  small: "p-2 rounded-xl",
+  medium: "p-2.5 rounded-xl",
+  large: "p-3 rounded-xl",
+};
+
+const iconSizes = {
+  small: "w-4 h-4",
+  medium: "w-5 h-5",
+  large: "w-6 h-6",
+};
+
+const FavoriteButton = ({ doctor, size = "medium", showLabel = false }) => {
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
   const [animating, setAnimating] = useState(false);
-
   const favorite = isFavorite(doctor.id);
 
   const handleToggleFavorite = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
     setAnimating(true);
 
     if (favorite) {
@@ -20,29 +31,36 @@ const FavoriteButton = ({ doctor, size = 'medium', showLabel = false }) => {
       addFavorite(doctor);
     }
 
-    // Reset animation after a short delay
-    setTimeout(() => setAnimating(false), 600);
+    setTimeout(() => setAnimating(false), 500);
   };
 
   return (
-    <button
+    <motion.button
+      type="button"
       onClick={handleToggleFavorite}
-      className={`favorite-button ${favorite ? 'favorite-button--active' : ''} ${
-        animating ? 'favorite-button--animating' : ''
-      } favorite-button--${size}`}
-      aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
-      title={favorite ? 'Remove from favorites' : 'Add to favorites'}
+      whileTap={{ scale: 0.9 }}
+      animate={animating ? { scale: [1, 1.25, 1] } : {}}
+      className={`
+        inline-flex items-center gap-1.5 font-medium transition-all duration-200
+        border backdrop-blur-sm shadow-soft
+        ${sizeClasses[size] || sizeClasses.medium}
+        ${
+          favorite
+            ? "bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-400"
+            : "bg-white/90 border-slate-200 text-slate-500 hover:border-rose-200 hover:text-rose-500 dark:bg-slate-900/90 dark:border-slate-700"
+        }
+      `}
+      aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
+      aria-pressed={favorite}
     >
-      <span className="favorite-button__icon">
-        {favorite ? '❤️' : '🤍'}
-      </span>
-      
+      <Heart
+        className={`${iconSizes[size] || iconSizes.medium} ${favorite ? "fill-current" : ""}`}
+        aria-hidden="true"
+      />
       {showLabel && (
-        <span className="favorite-button__label">
-          {favorite ? 'Favorited' : 'Add to Favorites'}
-        </span>
+        <span className="text-xs">{favorite ? "Saved" : "Save"}</span>
       )}
-    </button>
+    </motion.button>
   );
 };
 

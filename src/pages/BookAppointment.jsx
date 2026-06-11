@@ -1,193 +1,411 @@
-
-
-
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Calendar,
+  Video,
+  MapPin,
+  User,
+  Phone,
+} from "lucide-react";
 import { apiUrl } from "../config/api";
+import { createAppointment } from "../api/appointments";
 import { useToast } from "../context/ToastContext";
+import PageContainer from "../ui/PageContainer";
+import Card, { CardHeader } from "../ui/Card";
+import Button from "../ui/Button";
+import BookingStepper from "../components/booking/BookingStepper";
+import DoctorSelector from "../components/booking/DoctorSelector";
+import BookingCalendar from "../components/booking/BookingCalendar";
+import SlotPicker from "../components/booking/SlotPicker";
+import BookingSuccess from "../components/booking/BookingSuccess";
+
+const slide = {
+  initial: { opacity: 0, x: 24 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -24 },
+  transition: { duration: 0.3, ease: "easeOut" },
+};
+
+const formatDateISO = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
 
 const BookAppointment = () => {
   const { doctorId } = useParams();
   const navigate = useNavigate();
   const { addToast } = useToast();
 
-  const [doctor, setDoctor] = useState(null);
-  const [slot, setSlot] = useState("");
+  const [step, setStep] = useState(1);
+  const [completed, setCompleted] = useState(false);
+
+  const [doctors, setDoctors] = useState([]);
+  const [doctorsLoading, setDoctorsLoading] = useState(true);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState("");
+  const [smartSlots, setSmartSlots] = useState(null);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+
   const [consultationType, setConsultationType] = useState("video");
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  // TEMP slots (later from backend)
-  const availableSlots = [
-    "09:00 AM",
-    "10:00 AM",
-    "11:30 AM",
-    "02:00 PM",
-    "04:00 PM",
-    "06:00 PM",
-  ];
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // ----------------------------------
-  // Fetch doctor
-  // ----------------------------------
+  const fetchDoctors = useCallback(async () => {
+    try {
+      setDoctorsLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(apiUrl("/api/doctors"), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      setDoctors(Array.isArray(data) ? data : []);
+    } catch {
+      setDoctors([]);
+      addToast("Failed to load doctors", "error");
+    } finally {
+      setDoctorsLoading(false);
+    }
+  }, [addToast]);
+
   useEffect(() => {
-    const fetchDoctor = async () => {
+    fetchDoctors();
+  }, [fetchDoctors]);
+
+  useEffect(() => {
+    if (!doctorId || !doctors.length) return;
+    const found = doctors.find((d) => String(d.id) === String(doctorId));
+    if (found) {
+      setSelectedDoctor(found);
+      setStep(2);
+    }
+  }, [doctorId, doctors]);
+
+  useEffect(() => {
+    if (!selectedDoctor?.id || !selectedDate) return;
+
+    const loadSmartSlots = async () => {
+      setSlotsLoading(true);
+      setSmartSlots(null);
       try {
-        const res = await fetch(apiUrl(`/api/doctors/${doctorId}`));
-        const data = await res.json();
-        setDoctor(data);
-      } catch (err) {
-        console.error("Failed to fetch doctor", err);
+        const token = localStorage.getItem("token");
+        const res = await fetch(
+          apiUrl(
+            `/api/smart-appointments/smart-slots?doctorId=${selectedDoctor.id}`
+          ),
+          { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const raw = data.slots || [];
+          const formatted = raw.map((s) => {
+            if (typeof s === "string") return s;
+            if (s.time) return s.time;
+            if (s.hour != null) {
+              const h = Number(s.hour);
+              const period = h >= 12 ? "PM" : "AM";
+              const hour12 = h % 12 || 12;
+              return `${hour12}:00 ${period}`;
+            }
+            return null;
+          }).filter(Boolean);
+          if (formatted.length) setSmartSlots(formatted);
+        }
+      } catch {
+        /* fallback to default slots in SlotPicker */
+      } finally {
+        setSlotsLoading(false);
       }
     };
-    fetchDoctor();
-  }, [doctorId]);
 
-  // ----------------------------------
-  // Confirm booking
-  // ----------------------------------
+    loadSmartSlots();
+  }, [selectedDoctor?.id, selectedDate]);
+
+  const canProceed = () => {
+    switch (step) {
+      case 1:
+        return !!selectedDoctor;
+      case 2:
+        return !!selectedDate;
+      case 3:
+        return !!selectedSlot;
+      case 4:
+        return true;
+      default:
+        return false;
+    }
+  };
+
+  const nextStep = () => {
+    if (!canProceed()) {
+      addToast("Please complete this step before continuing", "error");
+      return;
+    }
+    setStep((s) => Math.min(s + 1, 4));
+  };
+
+  const prevStep = () => setStep((s) => Math.max(s - 1, 1));
+
   const handleConfirm = async () => {
-    if (!slot) {
-      addToast("Please select a time slot", "error");
+    if (!selectedDoctor || !selectedDate || !selectedSlot) {
+      addToast("Please complete all booking details", "error");
       return;
     }
 
     try {
-      setLoading(true);
-
-      const token = localStorage.getItem("token");
-      const user = JSON.parse(localStorage.getItem("user"));
-
-      if (!token || !user) {
-        addToast("Please login again", "error");
-        return;
-      }
-
-      // ✅ BACKEND-EXPECTED PAYLOAD
-      const payload = {
-        date: new Date().toISOString().split("T")[0],
-        time: slot,
-        doctorName: doctor.specialization, // 🔑 FIX
+      setSubmitting(true);
+      await createAppointment({
+        date: formatDateISO(selectedDate),
+        time: selectedSlot,
+        doctorName:
+          selectedDoctor.name ||
+          selectedDoctor.specialization ||
+          "Doctor",
         patientName: user.name || "Patient",
         patientPhone: user.phone || "9999999999",
-      };
-
-      const res = await fetch(apiUrl("/api/appointments"), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
       });
-
-      if (!res.ok) {
-        const err = await res.json();
-        console.error("Backend error:", err);
-        throw new Error(err.error || "Booking failed");
-      }
-
-      addToast("Appointment booked successfully", "success");
-      navigate("/appointments");
+      addToast("Appointment booked successfully!", "success");
+      setCompleted(true);
     } catch (err) {
       console.error(err);
-      addToast("Failed to book appointment", "error");
+      addToast(
+        err.response?.data?.error || "Failed to book appointment",
+        "error"
+      );
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  if (!doctor) {
-    return <p className="text-center py-10">Loading...</p>;
+  const resetBooking = () => {
+    setCompleted(false);
+    setStep(1);
+    setSelectedDoctor(null);
+    setSelectedDate(null);
+    setSelectedSlot("");
+    setConsultationType("video");
+  };
+
+  if (completed) {
+    return (
+      <PageContainer maxWidth="max-w-2xl">
+        <Card glass padding="lg">
+          <BookingSuccess
+            doctor={selectedDoctor}
+            date={selectedDate}
+            time={selectedSlot}
+            onViewAppointments={() => navigate("/appointments")}
+            onBookAnother={resetBooking}
+          />
+        </Card>
+      </PageContainer>
+    );
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-        <h1 className="text-2xl font-bold mb-4">Confirm Appointment</h1>
+    <PageContainer maxWidth="max-w-3xl">
+      <div className="mb-6">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-health-600 transition-colors mb-4"
+        >
+          <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+          Back
+        </button>
+        <h1 className="text-2xl lg:text-3xl font-display font-bold text-slate-900 dark:text-white">
+          Book an appointment
+        </h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">
+          Schedule your visit in a few simple steps
+        </p>
+      </div>
 
-        {/* Doctor Summary */}
-        <div className="border rounded-lg p-4 mb-6">
-          <h2 className="font-semibold">{doctor.specialization}</h2>
-          <p className="text-sm text-gray-500">
-            {doctor.experience} yrs experience
-          </p>
-          <p className="text-sm text-gray-500">
-            Fee: ₹1000
-          </p>
-        </div>
+      <Card glass padding="lg">
+        <BookingStepper
+          currentStep={step}
+          onStepClick={(s) => s < step && setStep(s)}
+        />
 
-        {/* Slot Selection */}
-        <div className="mb-6">
-          <label className="block font-medium mb-2">
-            Select Time Slot
-          </label>
+        <AnimatePresence mode="wait">
+          {step === 1 && (
+            <motion.div key="step1" {...slide}>
+              <CardHeader
+                title="Select a doctor"
+                subtitle="Choose the specialist for your visit"
+              />
+              <DoctorSelector
+                doctors={doctors.filter((d) => d.is_active !== false)}
+                selectedDoctor={selectedDoctor}
+                onSelect={setSelectedDoctor}
+                loading={doctorsLoading}
+              />
+            </motion.div>
+          )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {availableSlots.map((time) => (
-              <button
-                key={time}
-                type="button"
-                onClick={() => setSlot(time)}
-                className={`px-3 py-2 rounded border text-sm font-medium transition
-                  ${
-                    slot === time
-                      ? "bg-green-600 text-white border-green-600"
-                      : "bg-white hover:bg-green-50 border-gray-300"
-                  }
-                `}
-              >
-                {time}
-              </button>
-            ))}
-          </div>
+          {step === 2 && (
+            <motion.div key="step2" {...slide}>
+              <CardHeader
+                title="Select a date"
+                subtitle={
+                  selectedDoctor
+                    ? `Booking with ${selectedDoctor.name || selectedDoctor.specialization}`
+                    : "Pick your preferred visit date"
+                }
+              />
+              <BookingCalendar
+                selectedDate={selectedDate}
+                onSelectDate={setSelectedDate}
+              />
+            </motion.div>
+          )}
 
-          {!slot && (
-            <p className="text-xs text-orange-500 mt-2">
-              Please select a time slot
-            </p>
+          {step === 3 && (
+            <motion.div key="step3" {...slide}>
+              <CardHeader
+                title="Select a time slot"
+                subtitle={
+                  selectedDate
+                    ? selectedDate.toLocaleDateString("en-US", {
+                        weekday: "long",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : "Choose an available time"
+                }
+              />
+              <SlotPicker
+                slots={smartSlots}
+                selectedSlot={selectedSlot}
+                onSelectSlot={setSelectedSlot}
+                loading={slotsLoading}
+              />
+            </motion.div>
+          )}
+
+          {step === 4 && (
+            <motion.div key="step4" {...slide}>
+              <CardHeader
+                title="Confirm appointment"
+                subtitle="Review your booking details"
+              />
+
+              <div className="health-card p-5 space-y-4 mb-6">
+                <div className="flex items-center gap-3 pb-4 border-b border-slate-200/60 dark:border-slate-700/60">
+                  <div className="w-12 h-12 rounded-xl bg-health-100 dark:bg-health-900/40 flex items-center justify-center">
+                    <Calendar className="w-6 h-6 text-health-600" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-900 dark:text-white">
+                      {selectedDoctor?.name || selectedDoctor?.specialization}
+                    </p>
+                    <p className="text-sm text-health-600">
+                      {selectedDoctor?.specialization}
+                    </p>
+                  </div>
+                </div>
+
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <dt className="text-slate-500 text-xs uppercase tracking-wide">Date</dt>
+                    <dd className="font-medium text-slate-900 dark:text-white mt-0.5">
+                      {selectedDate?.toLocaleDateString("en-US", {
+                        weekday: "short",
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-500 text-xs uppercase tracking-wide">Time</dt>
+                    <dd className="font-medium text-slate-900 dark:text-white mt-0.5">
+                      {selectedSlot}
+                    </dd>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-slate-400" aria-hidden="true" />
+                    <span>{user.name || "Patient"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-slate-400" aria-hidden="true" />
+                    <span>{user.phone || "Not provided"}</span>
+                  </div>
+                </dl>
+              </div>
+
+              <div className="mb-6">
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                  Consultation type
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { id: "video", label: "Video call", icon: Video },
+                    { id: "in-person", label: "In-person", icon: MapPin },
+                  ].map((type) => {
+                    const Icon = type.icon;
+                    const active = consultationType === type.id;
+                    return (
+                      <button
+                        key={type.id}
+                        type="button"
+                        onClick={() => setConsultationType(type.id)}
+                        className={`flex items-center justify-center gap-2 p-4 rounded-xl border-2 font-medium text-sm transition-all ${
+                          active
+                            ? "border-health-500 bg-health-50 dark:bg-health-950/30 text-health-700"
+                            : "border-slate-200 dark:border-slate-700 hover:border-health-300"
+                        }`}
+                        aria-pressed={active}
+                      >
+                        <Icon className="w-5 h-5" aria-hidden="true" />
+                        {type.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Navigation */}
+        <div className="flex flex-col-reverse sm:flex-row gap-3 mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-700/60">
+          {step > 1 ? (
+            <Button variant="secondary" onClick={prevStep} icon={ArrowLeft}>
+              Back
+            </Button>
+          ) : (
+            <div className="hidden sm:block flex-1" />
+          )}
+
+          {step < 4 ? (
+            <Button
+              className="sm:ml-auto flex-1 sm:flex-none"
+              onClick={nextStep}
+              disabled={!canProceed()}
+              icon={ArrowRight}
+            >
+              Continue
+            </Button>
+          ) : (
+            <Button
+              className="sm:ml-auto flex-1 sm:flex-none"
+              onClick={handleConfirm}
+              loading={submitting}
+            >
+              Confirm booking
+            </Button>
           )}
         </div>
-
-        {/* Consultation Type (UI only) */}
-        <div className="mb-6">
-          <label className="block font-medium mb-2">
-            Consultation Type
-          </label>
-          <div className="flex gap-6">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={consultationType === "video"}
-                onChange={() => setConsultationType("video")}
-              />
-              Video
-            </label>
-
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={consultationType === "in-person"}
-                onChange={() => setConsultationType("in-person")}
-              />
-              In-Person
-            </label>
-          </div>
-        </div>
-
-        {/* Confirm Button */}
-        <button
-          onClick={handleConfirm}
-          disabled={loading}
-          className={`w-full py-2 rounded text-white font-medium ${
-            loading
-              ? "bg-gray-400"
-              : "bg-green-600 hover:bg-green-700"
-          }`}
-        >
-          {loading ? "Booking..." : "Confirm Appointment"}
-        </button>
-      </div>
-    </div>
+      </Card>
+    </PageContainer>
   );
 };
 

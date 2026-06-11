@@ -499,7 +499,7 @@ export default function AppointmentList({ appointments, onUpdate }) {
   // 📭 EMPTY STATE
   if (!appointments || appointments.length === 0) {
     return (
-      <div className="py-12 text-center text-gray-500">
+      <div className="py-12 text-center text-slate-500 dark:text-slate-400">
         📭 No appointments found
         <p className="text-sm mt-1">
           Try adjusting filters or creating a new appointment
@@ -510,10 +510,10 @@ export default function AppointmentList({ appointments, onUpdate }) {
 
   return (
     <div className="overflow-x-auto">
-      <h3 className="text-lg font-semibold mb-4">All Appointments</h3>
+      <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">All Appointments</h3>
 
       {/* TABLE HEADER */}
-      <div className="grid grid-cols-6 gap-4 px-4 py-2 bg-gray-100 text-sm font-semibold text-gray-700 rounded-t">
+      <div className="grid grid-cols-6 gap-4 px-4 py-2 bg-slate-100 dark:bg-slate-800/80 text-sm font-semibold text-slate-700 dark:text-slate-300 rounded-t">
         <div>Patient</div>
         <div>Email</div>
         <div>Date</div>
@@ -525,7 +525,7 @@ export default function AppointmentList({ appointments, onUpdate }) {
       {appointments.map((app) => (
         <div
           key={app.id}
-          className={`grid grid-cols-6 gap-4 px-4 py-3 border-b items-center hover:bg-gray-50 transition
+          className={`grid grid-cols-6 gap-4 px-4 py-3 border-b border-slate-200 dark:border-slate-700 items-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition text-slate-800 dark:text-slate-200
             ${app.status === "cancelled" ? "opacity-60" : ""}
           `}
         >
@@ -533,7 +533,7 @@ export default function AppointmentList({ appointments, onUpdate }) {
           <div className="font-medium">{app.name}</div>
 
           {/* Email */}
-          <div className="text-sm text-gray-600 truncate">{app.email}</div>
+          <div className="text-sm text-slate-600 dark:text-slate-400 truncate">{app.email}</div>
 
           {/* Date */}
           <div className="text-sm">
@@ -549,7 +549,7 @@ export default function AppointmentList({ appointments, onUpdate }) {
                 handleStatusChange(app.id, e.target.value)
               }
               className={`text-xs px-2 py-1 rounded border cursor-pointer ${
-                STATUS_CLASSES[app.status] || "bg-gray-100 text-gray-600"
+                STATUS_CLASSES[app.status] || "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
               }`}
             >
               <option value="scheduled">Scheduled</option>
@@ -601,38 +601,38 @@ export default function AppointmentList({ appointments, onUpdate }) {
 
       {/* 🔁 RESCHEDULE MODAL */}
       {showReschedule && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-semibold mb-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="health-card rounded-xl p-6 w-96 shadow-2xl dark:shadow-glass-lg-dark">
+            <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
               Reschedule Appointment
             </h3>
 
-            <label className="block mb-2 text-sm">New Date</label>
+            <label className="block mb-2 text-sm text-slate-700 dark:text-slate-300">New Date</label>
             <input
               type="date"
               value={newDate}
               onChange={(e) => setNewDate(e.target.value)}
-              className="w-full border px-3 py-2 rounded mb-3"
+              className="health-input mb-3"
             />
 
-            <label className="block mb-2 text-sm">New Time</label>
+            <label className="block mb-2 text-sm text-slate-700 dark:text-slate-300">New Time</label>
             <input
               type="time"
               value={newTime}
               onChange={(e) => setNewTime(e.target.value)}
-              className="w-full border px-3 py-2 rounded mb-4"
+              className="health-input mb-4"
             />
 
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setShowReschedule(false)}
-                className="px-3 py-1 text-sm bg-gray-300 rounded"
+                className="px-3 py-1 text-sm bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg"
               >
                 Cancel
               </button>
               <button
                 onClick={handleReschedule}
-                className="px-3 py-1 text-sm bg-blue-600 text-white rounded"
+                className="px-3 py-1 text-sm bg-health-600 hover:bg-health-700 text-white rounded-lg"
               >
                 Save
               </button>

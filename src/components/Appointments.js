@@ -5,7 +5,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { apiUrl } from '../config/api';
 import { useToast } from '../context/ToastContext';
 import AppointmentForm from './AppointmentForm';
-import LoadingSpinner from './LoadingSpinner';
+import PageContainer from '../ui/PageContainer';
+import { AppointmentsSkeleton } from '../ui/Skeleton';
 import StatusBadge from './StatusBadge';
 import ExportButton from './ExportButton'; // ✅ Added import
 import './Appointments.css';
@@ -150,13 +151,11 @@ const Appointments = ({ user }) => {
     }
   };
 
-  // ✅ Loading state
   if (loading) {
     return (
-      <div className="container mx-auto py-8">
-        <h1 className="text-2xl font-bold mb-6">My Appointments</h1>
-        <LoadingSpinner text="Loading your appointments..." />
-      </div>
+      <PageContainer>
+        <AppointmentsSkeleton />
+      </PageContainer>
     );
   }
 

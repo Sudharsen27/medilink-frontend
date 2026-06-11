@@ -13,6 +13,8 @@ const variants = {
     "bg-clinical-rose hover:bg-red-600 text-white border border-clinical-rose",
   outline:
     "bg-transparent border-2 border-health-500 text-health-700 dark:text-health-400 hover:bg-health-50 dark:hover:bg-health-950/30",
+  link:
+    "bg-transparent text-health-600 dark:text-health-400 hover:text-health-700 dark:hover:text-health-300 underline-offset-4 hover:underline border-transparent shadow-none p-0",
 };
 
 const sizes = {
@@ -27,6 +29,8 @@ const Button = ({
   size = "md",
   loading = false,
   disabled = false,
+  fullWidth = false,
+  iconOnly = false,
   className = "",
   icon: Icon,
   type = "button",
@@ -41,7 +45,9 @@ const Button = ({
       transition-all duration-200
       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-health-500 focus-visible:ring-offset-2
       disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none
-      ${variants[variant]} ${sizes[size]} ${className}
+      ${fullWidth ? "w-full" : ""}
+      ${iconOnly ? "!p-2.5 aspect-square" : ""}
+      ${variants[variant]} ${variant !== "link" ? sizes[size] : ""} ${className}
     `}
     {...props}
   >

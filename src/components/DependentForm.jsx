@@ -66,9 +66,9 @@ export default function DependentForm({ onSuccess }) {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 mb-10">
       {/* Card */}
-      <div className="relative rounded-2xl border border-gray-100 bg-white shadow-xl overflow-hidden">
+      <div className="relative health-card rounded-2xl shadow-xl dark:shadow-glass-lg-dark overflow-hidden">
         {/* Ambient gradients */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 opacity-40" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 opacity-40 dark:opacity-60" />
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-300 blur-3xl opacity-20 animate-pulse" />
         <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-300 blur-3xl opacity-20 animate-pulse" />
 
@@ -79,10 +79,10 @@ export default function DependentForm({ onSuccess }) {
               <UserPlus className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
                 Add Family Member
               </h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 Manage care for your loved ones
               </p>
             </div>
@@ -199,7 +199,7 @@ function InputField({
       />
 
       <div className="relative">
-        <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
         <input
           type={type}
           placeholder={placeholder}
@@ -207,8 +207,8 @@ function InputField({
           onChange={(e) => onChange(e.target.value)}
           onFocus={onFocus}
           onBlur={onBlur}
-          className={`w-full pl-12 pr-4 py-3.5 bg-white border-2 rounded-xl outline-none transition-all
-            border-gray-200 ${c.border} focus:ring-4 ${c.ring}`}
+          className={`w-full pl-12 pr-4 py-3.5 health-input border-2 rounded-xl outline-none transition-all
+            border-slate-200 dark:border-slate-600 ${c.border} focus:ring-4 ${c.ring} dark:focus:ring-slate-800`}
         />
       </div>
     </div>

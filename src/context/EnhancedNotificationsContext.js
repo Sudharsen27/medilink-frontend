@@ -216,7 +216,8 @@ export const EnhancedNotificationsProvider = ({ children }) => {
 
       if (!res.ok) throw new Error("Failed to load notifications");
 
-      const data = await res.json();
+      const payload = await res.json();
+      const data = Array.isArray(payload) ? payload : payload.data ?? [];
 
       // 🔊 Play sound ONLY if new notifications arrived
       if (data.length > prevCountRef.current) {

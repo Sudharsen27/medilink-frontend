@@ -1,31 +1,13 @@
-// // index.js
-// import React from 'react';
-// import ReactDOM from 'react-dom/client';
-// import './index.css'; // Tailwind or global styles
-// import App from './App';
-// import reportWebVitals from './reportWebVitals';
-// import { BrowserRouter } from 'react-router-dom';
-
-// const root = ReactDOM.createRoot(document.getElementById('root'));
-
-// root.render(
-//   <React.StrictMode>
-//     <BrowserRouter>
-//       <App />
-//     </BrowserRouter>
-//   </React.StrictMode>
-// );
-
-// // Optional: Measure performance
-// reportWebVitals();
-
 // src/index.js
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css'; // Tailwind or global styles
+import { initThemeBeforeRender } from './lib/theme';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
+
+initThemeBeforeRender();
 
 // ✅ Patch for QuillBot or injected script errors (if any)
 if (!window.updateCopyPasteInfo) {

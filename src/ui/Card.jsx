@@ -8,18 +8,26 @@ const paddings = {
   lg: "p-8",
 };
 
+const variantStyles = {
+  default: "health-card rounded-card-lg",
+  glass: "glass-panel rounded-card-lg",
+  outline: "rounded-card-lg border border-slate-200 dark:border-slate-700 bg-transparent",
+  elevated: "health-card rounded-card-lg shadow-glow dark:shadow-glow-dark",
+  muted: "rounded-card-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/50",
+};
+
 const Card = ({
   children,
   className = "",
   padding = "md",
   glass = false,
+  variant,
   hover = false,
   animate = false,
   ...props
 }) => {
-  const base = glass
-    ? "glass-panel rounded-card-lg"
-    : "health-card rounded-card-lg";
+  const resolvedVariant = variant || (glass ? "glass" : "default");
+  const base = variantStyles[resolvedVariant] || variantStyles.default;
 
   const hoverClass = hover
     ? "transition-all duration-300 hover:shadow-glow hover:-translate-y-0.5 cursor-pointer"

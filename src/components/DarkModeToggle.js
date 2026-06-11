@@ -1,33 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Moon, Sun } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
 
-function DarkModeToggle({ darkMode: controlledDarkMode, setDarkMode: setControlledDarkMode }) {
-  const [internalDarkMode, setInternalDarkMode] = useState(
-    () => localStorage.getItem("darkMode") === "true"
-  );
+/**
+ * Backward-compatible toggle for legacy Navbar usage.
+ * Prefer ThemeToggle for full light / dark / system control.
+ */
+function DarkModeToggle({ className = "", variant = "navbar" }) {
+  const { isDark, toggleTheme } = useTheme();
 
-  const isControlled = controlledDarkMode !== undefined && setControlledDarkMode;
-  const darkMode = isControlled ? controlledDarkMode : internalDarkMode;
-  const setDarkMode = isControlled ? setControlledDarkMode : setInternalDarkMode;
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle("dark", darkMode);
-    localStorage.setItem("darkMode", darkMode);
-  }, [darkMode]);
+  const navbarStyles =
+    "p-2 rounded-xl transition-all duration-300 bg-white/15 hover:bg-white/25 text-white border border-white/20";
+  const defaultStyles =
+    "p-2 rounded-xl transition-all duration-300 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60";
 
   return (
     <button
       type="button"
-      onClick={() => setDarkMode(!darkMode)}
-      className="p-2 rounded-xl transition-all duration-300 bg-white/15 hover:bg-white/25 text-white border border-white/20"
-      title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-      aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+      onClick={toggleTheme}
+      className={`${variant === "navbar" ? navbarStyles : defaultStyles} ${className}`}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
-      {darkMode ? (
-        <Sun className="w-5 h-5 text-amber-300" />
+      {isDark ? (
+        <Sun className="w-5 h-5 text-amber-300" aria-hidden="true" />
       ) : (
-        <Moon className="w-5 h-5" />
+        <Moon className="w-5 h-5" aria-hidden="true" />
       )}
     </button>
   );

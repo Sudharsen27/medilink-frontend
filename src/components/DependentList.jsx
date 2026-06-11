@@ -8,7 +8,7 @@ import { Trash2 } from "lucide-react";
 export default function DependentList({ dependents = [] }) {
   if (dependents.length === 0) {
     return (
-      <p className="text-gray-500 text-center mt-6">
+      <p className="text-slate-500 dark:text-slate-400 text-center mt-6">
         No family members added yet.
       </p>
     );
@@ -29,16 +29,16 @@ export default function DependentList({ dependents = [] }) {
             whileHover={{ y: -6, scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="relative bg-white rounded-2xl p-5 shadow-lg border border-gray-100 hover:shadow-2xl transition-all"
+            className="relative health-card rounded-2xl p-5 shadow-lg dark:shadow-soft-dark hover:shadow-2xl transition-all"
           >
             {/* Top row */}
             <div className="flex items-center gap-4 mb-3">
               <Avatar name={dep.name} size={48} />
               <div>
-                <h4 className="font-semibold text-lg text-gray-800">
+                <h4 className="font-semibold text-lg text-slate-800 dark:text-slate-100">
                   {dep.name}
                 </h4>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   {dep.relationship || "Family Member"}
                 </p>
               </div>
@@ -46,7 +46,7 @@ export default function DependentList({ dependents = [] }) {
 
             {/* Info */}
             <div className="flex items-center justify-between mt-4">
-              <span className="text-sm px-3 py-1 rounded-full bg-blue-50 text-blue-600 font-medium">
+              <span className="text-sm px-3 py-1 rounded-full bg-health-50 dark:bg-health-950/30 text-health-600 dark:text-health-400 font-medium">
                 Age: {dep.age || "—"}
               </span>
 

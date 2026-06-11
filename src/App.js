@@ -14,7 +14,7 @@
 // import Notifications from "./components/Notifications";
 // import PatientProfile from "./components/PatientProfile";
 // import PatientManagement from "./components/PatientManagement";
-// import EmergencyDashboard from "./components/EmergencyDashboard";
+// import EmergencyDashboard from "./components/emergency/EmergencyDashboard";
 
 // // Pages
 // import TelemedicineList from "./pages/TelemedicineList";
@@ -262,7 +262,7 @@ import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
 /* ===================== COMPONENTS ===================== */
-import Navbar from "./components/Navbar";
+import AppLayout from "./components/AppLayout";
 import Dashboard from "./components/Dashboard";
 import Register from "./components/Register";
 import Login from "./components/Login";
@@ -273,7 +273,7 @@ import Prescriptions from "./components/Prescriptions";
 import Notifications from "./components/Notifications";
 import PatientProfile from "./components/PatientProfile";
 import PatientManagement from "./components/PatientManagement";
-import EmergencyDashboard from "./components/EmergencyDashboard";
+import EmergencyDashboard from "./components/emergency/EmergencyDashboard";
 
 /* ===================== PAGES ===================== */
 import TelemedicineList from "./pages/TelemedicineList";
@@ -293,6 +293,8 @@ import AdminAppointments from "./admin/AdminAppointments";
 
 /* ===================== CONTEXT ===================== */
 import { ToastProvider, useToast } from "./context/ToastContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import { THEME_STORAGE_KEY } from "./lib/theme";
 import { FavoritesProvider } from "./context/FavoritesContext";
 import { ActivityProvider } from "./context/ActivityContext";
 import { MedicalRecordsProvider } from "./context/MedicalRecordsContext";
@@ -317,10 +319,6 @@ function App() {
     return stored ? JSON.parse(stored) : null;
   });
 
-  const [darkMode, setDarkMode] = useState(
-    localStorage.getItem("darkMode") === "true"
-  );
-
   const { addToast } = useToast();
   const navigate = useNavigate();
 
@@ -334,12 +332,6 @@ function App() {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  /* Dark mode */
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-    localStorage.setItem("darkMode", darkMode);
-  }, [darkMode]);
-
   /* Login */
   const handleLogin = (loggedInUser) => {
     localStorage.setItem("user", JSON.stringify(loggedInUser));
@@ -350,8 +342,10 @@ function App() {
 
   /* Logout */
   const handleLogout = () => {
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
     setUser(null);
     localStorage.clear();
+    if (savedTheme) localStorage.setItem(THEME_STORAGE_KEY, savedTheme);
     addToast("Logged out successfully", "info");
     navigate("/login");
   };
@@ -359,79 +353,69 @@ function App() {
   useAutoLogout(user, handleLogout);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-health-50/30 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-health-950/20 transition-colors duration-300">
-      {user && (
-        <Navbar
-          user={user}
-          onLogout={handleLogout}
-          darkMode={darkMode}
-          setDarkMode={setDarkMode}
+    <div className="min-h-screen app-shell transition-colors duration-theme">
+      <Routes>
+        {/* Default */}
+        <Route
+          path="/"
+          element={<Navigate to={user ? "/dashboard" : "/login"} />}
         />
-      )}
 
-      <div className={user ? "pb-8" : ""}>
-        <Routes>
-          {/* Default */}
-          <Route
-            path="/"
-            element={<Navigate to={user ? "/dashboard" : "/login"} />}
-          />
+        {/* Auth */}
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/dashboard" /> : <Login onLogin={handleLogin} />}
+        />
+        <Route
+          path="/register"
+          element={user ? <Navigate to="/dashboard" /> : <Register />}
+        />
 
-          {/* Auth */}
-          <Route
-            path="/login"
-            element={user ? <Navigate to="/dashboard" /> : <Login onLogin={handleLogin} />}
-          />
-          <Route
-            path="/register"
-            element={user ? <Navigate to="/dashboard" /> : <Register />}
-          />
+        {/* Authenticated app shell with sidebar */}
+        <Route
+          element={
+            user ? (
+              <AppLayout user={user} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        >
+          <Route path="/dashboard" element={<Dashboard user={user} />} />
+          <Route path="/profile" element={<Profile user={user} setUser={setUser} />} />
+          <Route path="/patient-profile" element={<PatientProfile />} />
+          <Route path="/appointments" element={<Appointments user={user} />} />
+          <Route path="/appointments/book/:doctorId" element={<BookAppointment />} />
+          <Route path="/medical-records" element={<MedicalRecords user={user} />} />
+          <Route path="/prescriptions" element={<Prescriptions user={user} />} />
+          <Route path="/notifications" element={<Notifications user={user} />} />
+          <Route path="/telemedicine" element={<TelemedicineList user={user} />} />
+          <Route path="/telemedicine/:appointmentId" element={<Telemedicine user={user} />} />
+          <Route path="/doctors" element={<Doctors />} />
+          <Route path="/doctors/:id" element={<DoctorProfile />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/caregivers" element={<Caregivers />} />
+          <Route path="/patients" element={<PatientManagement />} />
+          <Route path="/emergency" element={<EmergencyDashboard />} />
+        </Route>
 
-          {/* User Routes */}
-          <Route path="/dashboard" element={user ? <Dashboard user={user} /> : <Navigate to="/login" />} />
-          <Route path="/profile" element={user ? <Profile user={user} setUser={setUser} /> : <Navigate to="/login" />} />
-          <Route
-  path="/patient-profile"
-  element={user ? <PatientProfile /> : <Navigate to="/login" />}
-/>
-          <Route path="/appointments" element={user ? <Appointments user={user} /> : <Navigate to="/login" />} />
-          <Route path="/appointments/book/:doctorId" element={user ? <BookAppointment /> : <Navigate to="/login" />} />
-          <Route path="/medical-records" element={user ? <MedicalRecords user={user} /> : <Navigate to="/login" />} />
-          <Route path="/prescriptions" element={user ? <Prescriptions user={user} /> : <Navigate to="/login" />} />
-          <Route path="/notifications" element={user ? <Notifications user={user} /> : <Navigate to="/login" />} />
+        {/* ================= ADMIN ROUTES ================= */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute user={user}>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="doctors" element={<AdminDoctors />} />
+          <Route path="appointments" element={<AdminAppointments />} />
+        </Route>
 
-          {/* Telemedicine */}
-          <Route path="/telemedicine" element={user ? <TelemedicineList user={user} /> : <Navigate to="/login" />} />
-          <Route path="/telemedicine/:appointmentId" element={user ? <Telemedicine user={user} /> : <Navigate to="/login" />} />
-
-          {/* Doctors */}
-          <Route path="/doctors" element={user ? <Doctors /> : <Navigate to="/login" />} />
-          <Route path="/doctors/:id" element={user ? <DoctorProfile /> : <Navigate to="/login" />} />
-
-          {/* Others */}
-          <Route path="/favorites" element={user ? <Favorites /> : <Navigate to="/login" />} />
-          <Route path="/caregivers" element={user ? <Caregivers /> : <Navigate to="/login" />} />
-          <Route path="/patients" element={user ? <PatientManagement /> : <Navigate to="/login" />} />
-          <Route path="/emergency" element={user ? <EmergencyDashboard user={user} /> : <Navigate to="/login" />} />
-
-          {/* ================= ADMIN ROUTES ================= */}
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute user={user}>
-                <AdminLayout />
-              </AdminRoute>
-            }
-          >
-            <Route index element={<AdminDashboard />} />
-            <Route path="doctors" element={<AdminDoctors />} />
-            <Route path="appointments" element={<AdminAppointments />} />
-          </Route>
-
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
-        </Routes>
-      </div>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
+      </Routes>
     </div>
   );
 }
@@ -440,6 +424,7 @@ function App() {
 
 export default function AppWrapper() {
   return (
+    <ThemeProvider>
     <ToastProvider>
       <FavoritesProvider>
         <ActivityProvider>
@@ -463,5 +448,6 @@ export default function AppWrapper() {
         </ActivityProvider>
       </FavoritesProvider>
     </ToastProvider>
+    </ThemeProvider>
   );
 }

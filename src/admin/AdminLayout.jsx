@@ -7,6 +7,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import ThemeToggle from "../components/ThemeToggle";
 
 const adminLinks = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -15,7 +16,7 @@ const adminLinks = [
 ];
 
 const AdminLayout = () => (
-  <div className="min-h-screen flex flex-col lg:flex-row">
+  <div className="min-h-screen app-shell flex flex-col lg:flex-row transition-colors duration-theme">
     <aside className="lg:w-64 glass-panel lg:min-h-screen border-r border-slate-200/60 dark:border-slate-700/60 p-5 shrink-0">
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -56,13 +57,16 @@ const AdminLayout = () => (
         })}
       </nav>
 
-      <Link
-        to="/dashboard"
-        className="hidden lg:flex items-center gap-2 mt-8 px-3.5 py-2.5 text-sm text-slate-500 hover:text-health-600 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-        Back to app
-      </Link>
+      <div className="mt-6 space-y-2">
+        <ThemeToggle variant="menu" />
+        <Link
+          to="/dashboard"
+          className="flex items-center gap-2 px-3.5 py-2.5 text-sm text-slate-500 hover:text-health-600 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+          Back to app
+        </Link>
+      </div>
     </aside>
 
     <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0">

@@ -17,9 +17,14 @@ const Prescriptions = ({ user }) => {
       const response = await axios.get(apiUrl('/api/prescriptions'), {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setPrescriptions(response.data);
+      const payload = response.data;
+      const list = Array.isArray(payload)
+        ? payload
+        : payload?.data ?? payload?.prescriptions ?? [];
+      setPrescriptions(Array.isArray(list) ? list : []);
     } catch (error) {
       console.error('Error fetching prescriptions:', error);
+      setPrescriptions([]);
     } finally {
       setLoading(false);
     }
@@ -98,7 +103,7 @@ const Prescriptions = ({ user }) => {
                 <div className="mb-4">
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Medications</h4>
                   <div className="space-y-3">
-                    {prescription.medications.map((medication, index) => (
+                    {(Array.isArray(prescription.medications) ? prescription.medications : []).map((medication, index) => (
                       <div key={index} className="flex justify-between items-center py-3 border-b dark:border-gray-600 last:border-b-0">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">

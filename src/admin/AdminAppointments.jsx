@@ -229,26 +229,26 @@ const AdminAppointments = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Manage Appointments</h1>
+      <h1 className="text-2xl font-bold mb-6 text-slate-900 dark:text-slate-100">Manage Appointments</h1>
 
       {appointments.length === 0 ? (
-        <p className="text-gray-500">No appointments found</p>
+        <p className="text-slate-500 dark:text-slate-400">No appointments found</p>
       ) : (
-        <div className="bg-white shadow rounded-lg overflow-x-auto">
+        <div className="health-card shadow-soft dark:shadow-soft-dark rounded-lg overflow-x-auto">
           <table className="w-full border-collapse">
-            <thead className="bg-gray-100">
+            <thead className="bg-slate-100 dark:bg-slate-800/80">
               <tr>
-                <th className="p-3 text-left">Patient</th>
-                <th className="p-3 text-left">Doctor</th>
-                <th className="p-3 text-left">Date</th>
-                <th className="p-3 text-left">Status</th>
-                <th className="p-3 text-left">Actions</th>
+                <th className="p-3 text-left text-slate-700 dark:text-slate-300">Patient</th>
+                <th className="p-3 text-left text-slate-700 dark:text-slate-300">Doctor</th>
+                <th className="p-3 text-left text-slate-700 dark:text-slate-300">Date</th>
+                <th className="p-3 text-left text-slate-700 dark:text-slate-300">Status</th>
+                <th className="p-3 text-left text-slate-700 dark:text-slate-300">Actions</th>
               </tr>
             </thead>
 
             <tbody>
               {appointments.map((appt) => (
-                <tr key={appt.id} className="border-t">
+                <tr key={appt.id} className="border-t border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
                   <td className="p-3">{appt.patient_name}</td>
                   <td className="p-3">{appt.doctor_name}</td>
                   <td className="p-3">

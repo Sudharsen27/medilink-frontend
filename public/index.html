@@ -7,7 +7,10 @@
 <!-- <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png">
 <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico"> -->
 
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="theme-color" content="#0d9488" />
     <meta
       name="description"
@@ -29,6 +32,28 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>Medilink App</title>
+    <script>
+      (function () {
+        var KEY = "medilink-theme";
+        var LEGACY = "darkMode";
+        var stored = localStorage.getItem(KEY);
+        var theme = stored;
+        if (!theme || ["light", "dark", "system"].indexOf(theme) === -1) {
+          var legacy = localStorage.getItem(LEGACY);
+          if (legacy === "true") theme = "dark";
+          else if (legacy === "false") theme = "light";
+          else theme = "system";
+        }
+        var dark =
+          theme === "dark" ||
+          (theme === "system" &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
+        var root = document.documentElement;
+        if (dark) root.classList.add("dark");
+        root.setAttribute("data-theme", dark ? "dark" : "light");
+        root.style.colorScheme = dark ? "dark" : "light";
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

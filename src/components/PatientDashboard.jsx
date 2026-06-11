@@ -25,6 +25,8 @@ import {
 import Card, { CardHeader } from "../ui/Card";
 import Button from "../ui/Button";
 import EmptyState from "../ui/EmptyState";
+import MobileCard, { MobileCardScroller } from "../ui/MobileCard";
+import SwipeableRow from "../ui/SwipeableRow";
 import StatsCard from "./StatsCard";
 import { useMedicalRecords } from "../context/MedicalRecordsContext";
 import { useEmergency } from "../context/EmergencyContext";
@@ -176,36 +178,67 @@ const UpcomingAppointmentsWidget = ({ appointments, onViewAll, onBook }) => {
       />
 
       {upcoming.length > 0 ? (
-        <div className="space-y-3">
-          {upcoming.map((appt) => (
-            <div
-              key={appt.id}
-              className="flex items-center gap-4 p-4 rounded-card bg-slate-50/80 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 hover:shadow-soft transition-all"
-            >
-              <div className="w-12 h-12 rounded-xl bg-health-100 dark:bg-health-900/40 flex flex-col items-center justify-center shrink-0">
-                <span className="text-[10px] font-bold text-health-600 uppercase">
-                  {new Date(appt.date).toLocaleDateString("en-US", { month: "short" })}
-                </span>
-                <span className="text-lg font-bold text-health-700 dark:text-health-300 leading-none">
-                  {new Date(appt.date).getDate()}
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-slate-900 dark:text-white truncate">
-                  {appt.title || appt.doctorName || "Appointment"}
-                </p>
-                <p className="text-sm text-slate-500 flex items-center gap-1.5 mt-0.5">
-                  <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                  {formatTime(appt.time)}
-                  {appt.doctorName && ` · Dr. ${appt.doctorName}`}
-                </p>
-              </div>
-              <span className={`px-2.5 py-1 text-xs font-semibold rounded-full capitalize shrink-0 ${statusStyle(appt.status)}`}>
-                {appt.status || "pending"}
-              </span>
-            </div>
-          ))}
-        </div>
+        <>
+          {/* Mobile: horizontal swipeable cards */}
+          <div className="lg:hidden">
+            <MobileCardScroller>
+              {upcoming.map((appt) => (
+                <MobileCard
+                  key={appt.id}
+                  title={appt.title || appt.doctorName || "Appointment"}
+                  subtitle={`${formatTime(appt.time)}${appt.doctorName ? ` · Dr. ${appt.doctorName}` : ""}`}
+                  meta={formatDate(appt.date)}
+                  icon={Calendar}
+                  badge={appt.status || "pending"}
+                  badgeClassName={statusStyle(appt.status)}
+                  onClick={onViewAll}
+                />
+              ))}
+            </MobileCardScroller>
+          </div>
+
+          {/* Desktop: list with swipe actions on touch devices */}
+          <div className="hidden lg:block space-y-3">
+            {upcoming.map((appt) => (
+              <SwipeableRow
+                key={appt.id}
+                actions={[
+                  {
+                    label: "View",
+                    icon: ChevronRight,
+                    className: "bg-health-600",
+                    onClick: onViewAll,
+                  },
+                ]}
+              >
+                <div className="flex items-center gap-4 p-4 rounded-card bg-slate-50/80 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
+                  <div className="w-12 h-12 rounded-xl bg-health-100 dark:bg-health-900/40 flex flex-col items-center justify-center shrink-0">
+                    <span className="text-[10px] font-bold text-health-600 uppercase">
+                      {new Date(appt.date).toLocaleDateString("en-US", { month: "short" })}
+                    </span>
+                    <span className="text-lg font-bold text-health-700 dark:text-health-300 leading-none">
+                      {new Date(appt.date).getDate()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-slate-900 dark:text-white truncate">
+                      {appt.title || appt.doctorName || "Appointment"}
+                    </p>
+                    <p className="text-sm text-slate-500 flex items-center gap-1.5 mt-0.5">
+                      <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                      {formatTime(appt.time)}
+                      {appt.doctorName && ` · Dr. ${appt.doctorName}`}
+                    </p>
+                  </div>
+                  <span className={`px-2.5 py-1 text-xs font-semibold rounded-full capitalize shrink-0 ${statusStyle(appt.status)}`}>
+                    {appt.status || "pending"}
+                  </span>
+                </div>
+              </SwipeableRow>
+            ))}
+          </div>
+
+        </>
       ) : (
         <EmptyState
           icon={Calendar}
@@ -480,7 +513,7 @@ const PatientQuickActions = ({ onAction, unreadCount }) => {
   return (
     <Card padding="md">
       <CardHeader title="Quick Actions" subtitle="Jump to common tasks" />
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5 sm:gap-3">
         {actions.map((action) => {
           const Icon = action.icon;
           return (
