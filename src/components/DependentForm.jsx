@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { apiUrl } from "../config/api";
 import { UserPlus, User, Calendar, Heart, Check, Loader2 } from "lucide-react";
+import { useToast } from "../context/ToastContext";
 
 /* ---------------------------------
    Tailwind-safe color map
@@ -27,6 +28,7 @@ const COLOR = {
 };
 
 export default function DependentForm({ onSuccess }) {
+  const { addToast } = useToast();
   const [form, setForm] = useState({ name: "", age: "", relationship: "" });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -57,7 +59,7 @@ export default function DependentForm({ onSuccess }) {
         onSuccess?.();
       }, 1800);
     } catch {
-      alert("Failed to add family member");
+      addToast("Failed to add family member", "error");
     } finally {
       setLoading(false);
     }

@@ -9,7 +9,12 @@ import PageContainer from '../ui/PageContainer';
 import { AppointmentsSkeleton } from '../ui/Skeleton';
 import StatusBadge from './StatusBadge';
 import ExportButton from './ExportButton'; // ✅ Added import
+import MeetLinkButton from './MeetLinkButton';
+import CalendarLinkButton from './CalendarLinkButton';
 import './Appointments.css';
+
+const isVideoType = (type) =>
+  ['video', 'telemedicine'].includes(String(type || '').toLowerCase());
 
 const Appointments = ({ user }) => {
   const [appointments, setAppointments] = useState([]);
@@ -288,6 +293,7 @@ const Appointments = ({ user }) => {
             <AppointmentCard
               key={getId(appointment)}
               appointment={appointment}
+              isAdmin={user?.role === 'admin'}
               onCancel={() => cancelAppointment(getId(appointment))}
               onReschedule={() => rescheduleAppointment(getId(appointment))}
               onEdit={() => handleEditAppointment(appointment)}
@@ -295,6 +301,24 @@ const Appointments = ({ user }) => {
               onStatusChange={(newStatus) =>
                 handleStatusUpdate(getId(appointment), newStatus)
               }
+              onSyncCalendar={async () => {
+                try {
+                  const token = localStorage.getItem('token');
+                  const res = await fetch(
+                    apiUrl(`/api/appointments/${getId(appointment)}/sync-calendar`),
+                    {
+                      method: 'POST',
+                      headers: { Authorization: `Bearer ${token}` },
+                    }
+                  );
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.error || 'Sync failed');
+                  addToast(data.message || 'Calendar synced', 'success');
+                  fetchAppointments();
+                } catch (err) {
+                  addToast(err.message || 'Calendar sync failed', 'error');
+                }
+              }}
             />
           ))}
         </div>
@@ -308,11 +332,13 @@ const Appointments = ({ user }) => {
 --------------------------- */
 const AppointmentCard = ({
   appointment,
+  isAdmin,
   onCancel,
   onReschedule,
   onEdit,
   onDelete,
   onStatusChange,
+  onSyncCalendar,
 }) => {
   const formatDate = (dateString) =>
     new Date(dateString).toLocaleDateString('en-US', {
@@ -332,6 +358,12 @@ const AppointmentCard = ({
   const canCancel = ['scheduled', 'confirmed', 'pending'].includes(appointment.status);
   const canReschedule = ['scheduled', 'confirmed'].includes(appointment.status);
 
+  const doctorLabel =
+    appointment.doctor_name || appointment.doctorName || 'Doctor';
+  const isVideo = isVideoType(appointment.appointment_type);
+  const hasCalendar =
+    appointment.meet_link || appointment.calendar_link || appointment.google_event_id;
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow duration-200">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -339,9 +371,14 @@ const AppointmentCard = ({
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-4 mb-3">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {appointment.doctorName || 'Doctor'}
+              {doctorLabel}
             </h3>
             <StatusBadge status={appointment.status} size="medium" />
+            {isVideo && (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                Video
+              </span>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
@@ -356,6 +393,33 @@ const AppointmentCard = ({
             <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
               <strong>Notes:</strong> {appointment.notes}
             </p>
+          )}
+
+          {appointment.meet_link && (
+            <div className="mt-3">
+              <MeetLinkButton meetLink={appointment.meet_link} />
+            </div>
+          )}
+
+          {!appointment.meet_link && appointment.calendar_link && (
+            <div className="mt-3">
+              <CalendarLinkButton calendarLink={appointment.calendar_link} />
+            </div>
+          )}
+
+          {isVideo && !hasCalendar && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                Video visit — calendar not linked yet.
+              </p>
+              <button
+                type="button"
+                onClick={onSyncCalendar}
+                className="text-xs font-medium text-health-600 hover:text-health-700 underline"
+              >
+                Sync Google Calendar
+              </button>
+            </div>
           )}
         </div>
 
@@ -386,14 +450,18 @@ const AppointmentCard = ({
             Edit / View
           </button>
 
-          <button
-            onClick={onDelete}
-            className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
-          >
-            Delete
-          </button>
+          {isAdmin && (
+            <button
+              onClick={onDelete}
+              className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+            >
+              Delete
+            </button>
+          )}
 
-          <StatusDropdown current={appointment.status} onChange={onStatusChange} />
+          {isAdmin && (
+            <StatusDropdown current={appointment.status} onChange={onStatusChange} />
+          )}
         </div>
       </div>
     </div>

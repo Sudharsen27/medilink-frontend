@@ -15,6 +15,8 @@ import Button from "../ui/Button";
 import Badge from "../ui/Badge";
 import { Eyebrow, Heading } from "../ui/Typography";
 import { SkeletonScreen, Skeleton } from "../ui/Skeleton";
+import MeetLinkButton from "../components/MeetLinkButton";
+import CalendarLinkButton from "../components/CalendarLinkButton";
 
 const statusVariant = (status) => {
   const s = String(status || "").toLowerCase();
@@ -194,7 +196,19 @@ const TelemedicineList = () => {
                     </div>
                   </div>
 
-                  <div className="shrink-0 lg:text-right">
+                  <div className="shrink-0 lg:text-right flex flex-col gap-2">
+                    {appointment.meet_link && (
+                      <MeetLinkButton
+                        meetLink={appointment.meet_link}
+                        className="w-full lg:w-auto"
+                      />
+                    )}
+                    {!appointment.meet_link && appointment.calendar_link && (
+                      <CalendarLinkButton
+                        calendarLink={appointment.calendar_link}
+                        className="w-full lg:w-auto"
+                      />
+                    )}
                     {joinable ? (
                       <Link to={`/telemedicine/${appointment.id}`}>
                         <Button variant="primary" icon={ArrowRight} className="w-full lg:w-auto">

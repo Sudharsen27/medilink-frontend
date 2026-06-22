@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { apiUrl } from "../config/api";
 import Avatar from "./Avatar";
 import { Trash2 } from "lucide-react";
+import { showError } from "../lib/toast";
 
 export default function DependentList({ dependents = [] }) {
   if (dependents.length === 0) {
@@ -84,7 +85,7 @@ async function handleDelete(id) {
 
     window.location.reload(); // simple refresh
   } catch (err) {
-    alert("Failed to remove member");
+    showError("Failed to remove member");
   }
 }
 

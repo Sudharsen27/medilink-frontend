@@ -418,6 +418,7 @@ import {
   updateAppointmentStatus,
   updateAppointment, // ✅ RESCHEDULE API
 } from "../api/appointments";
+import { useToast } from "../context/ToastContext";
 
 /**
  * ✅ SUPPORT ALL BACKEND STATUSES
@@ -432,6 +433,7 @@ const STATUS_CLASSES = {
 };
 
 export default function AppointmentList({ appointments, onUpdate }) {
+  const { addToast } = useToast();
   const [loadingId, setLoadingId] = useState(null);
 
   // 🔁 Reschedule state
@@ -450,7 +452,7 @@ export default function AppointmentList({ appointments, onUpdate }) {
       onUpdate();
     } catch (err) {
       console.error("Delete failed", err);
-      alert("Failed to delete appointment");
+      addToast("Failed to delete appointment", "error");
     } finally {
       setLoadingId(null);
     }
@@ -464,7 +466,7 @@ export default function AppointmentList({ appointments, onUpdate }) {
       onUpdate();
     } catch (err) {
       console.error("Status update failed", err);
-      alert("Failed to update status");
+      addToast("Failed to update status", "error");
     } finally {
       setLoadingId(null);
     }
@@ -473,7 +475,7 @@ export default function AppointmentList({ appointments, onUpdate }) {
   // 🔁 RESCHEDULE
   const handleReschedule = async () => {
     if (!newDate || !newTime) {
-      alert("Please select date and time");
+      addToast("Please select date and time", "warning");
       return;
     }
 
@@ -490,7 +492,7 @@ export default function AppointmentList({ appointments, onUpdate }) {
       onUpdate();
     } catch (err) {
       console.error("Reschedule failed", err);
-      alert("Failed to reschedule appointment");
+      addToast("Failed to reschedule appointment", "error");
     } finally {
       setLoadingId(null);
     }

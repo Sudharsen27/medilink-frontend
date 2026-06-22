@@ -11,6 +11,7 @@ import {
   Phone,
 } from "lucide-react";
 import { useEmergency } from "../../context/EmergencyContext";
+import { useToast } from "../../context/ToastContext";
 import PageContainer from "../../ui/PageContainer";
 import Card from "../../ui/Card";
 import Button from "../../ui/Button";
@@ -76,6 +77,7 @@ const EmergencySkeleton = () => (
 );
 
 const EmergencyDashboard = () => {
+  const { addToast } = useToast();
   const emergency = useEmergency();
   const {
     emergencyContacts = [],
@@ -97,7 +99,7 @@ const EmergencyDashboard = () => {
 
   const connectEmergencyDoctor =
     emergency.connectEmergencyDoctor ??
-    (() => window.alert("Emergency doctor service not available yet"));
+    (() => addToast("Emergency doctor service not available yet", "info"));
 
   const dispatchAmbulance =
     emergency.dispatchAmbulance ??

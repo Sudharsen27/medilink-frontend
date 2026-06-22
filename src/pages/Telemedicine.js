@@ -7,8 +7,11 @@ import {
   fetchChatHistory,
   sendChatMessage,
 } from '../api/telemedicine';
+import { useToast } from '../context/ToastContext';
+import MeetLinkButton from '../components/MeetLinkButton';
 
 const Telemedicine = ({ user }) => {
+  const { addToast } = useToast();
   const { appointmentId } = useParams();
   const navigate = useNavigate();
   const [appointment, setAppointment] = useState(null);
@@ -109,7 +112,7 @@ const Telemedicine = ({ user }) => {
       
     } catch (error) {
       console.error('Still cannot access media:', error);
-      alert('Please allow camera and microphone permissions in your browser settings.');
+      addToast('Please allow camera and microphone permissions in your browser settings.', 'warning');
     }
   };
 
@@ -130,6 +133,7 @@ const Telemedicine = ({ user }) => {
       setNewMessage('');
     } catch (error) {
       console.error('Chat send failed:', error);
+      addToast('Failed to send message', 'error');
     }
   };
 
@@ -205,6 +209,18 @@ const Telemedicine = ({ user }) => {
         {loadError && (
           <div className="bg-rose-900 border border-rose-700 rounded-lg p-4 mb-6 text-rose-100">
             {loadError}
+          </div>
+        )}
+
+        {appointment?.meet_link && (
+          <div className="bg-emerald-900/40 border border-emerald-700 rounded-lg p-4 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h3 className="font-semibold text-emerald-100">Google Meet ready</h3>
+              <p className="text-emerald-200/80 text-sm mt-1">
+                Join the official video call for this consultation.
+              </p>
+            </div>
+            <MeetLinkButton meetLink={appointment.meet_link} label="Open Google Meet" />
           </div>
         )}
 

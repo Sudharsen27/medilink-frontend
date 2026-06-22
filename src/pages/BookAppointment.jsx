@@ -55,6 +55,7 @@ const BookAppointment = () => {
 
   const [consultationType, setConsultationType] = useState("video");
   const [submitting, setSubmitting] = useState(false);
+  const [bookedAppointment, setBookedAppointment] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -161,7 +162,7 @@ const BookAppointment = () => {
 
     try {
       setSubmitting(true);
-      await createAppointment({
+      const booked = await createAppointment({
         date: formatDateISO(selectedDate),
         time: selectedSlot,
         doctorName:
@@ -170,7 +171,9 @@ const BookAppointment = () => {
           "Doctor",
         patientName: user.name || "Patient",
         patientPhone: user.phone || "9999999999",
+        appointmentType: consultationType === "video" ? "video" : "in-person",
       });
+      setBookedAppointment(booked);
       addToast("Appointment booked successfully!", "success");
       setCompleted(true);
     } catch (err) {
@@ -191,6 +194,7 @@ const BookAppointment = () => {
     setSelectedDate(null);
     setSelectedSlot("");
     setConsultationType("video");
+    setBookedAppointment(null);
   };
 
   if (completed) {
@@ -201,6 +205,7 @@ const BookAppointment = () => {
             doctor={selectedDoctor}
             date={selectedDate}
             time={selectedSlot}
+            meetLink={bookedAppointment?.meet_link}
             onViewAppointments={() => navigate("/appointments")}
             onBookAnother={resetBooking}
           />

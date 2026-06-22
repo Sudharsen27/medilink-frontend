@@ -10,6 +10,7 @@ import {
   FileText,
 } from "lucide-react";
 import { fetchPrescriptions, fetchPrescriptionById } from "../api/prescriptions";
+import { showInfo } from "../lib/toast";
 import PageContainer from "../ui/PageContainer";
 import Card from "../ui/Card";
 import Button from "../ui/Button";
@@ -206,7 +207,9 @@ const Prescriptions = () => {
                   size="sm"
                   variant="outline"
                   icon={Download}
-                  onClick={() => window.alert(`PDF download for prescription #${rx.id} coming soon`)}
+                  onClick={() =>
+                    showInfo(`PDF download for prescription #${rx.id} coming soon`)
+                  }
                 >
                   Download
                 </Button>

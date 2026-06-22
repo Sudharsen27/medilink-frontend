@@ -1,10 +1,11 @@
 /**
  * MediLink toast design system
- * Wraps react-hot-toast with premium healthcare styling (see lib/toast.js)
+ * Single source: ToastContext mounts the Toaster; lib/toast.js renders premium toasts.
  */
-import { Toaster } from "react-hot-toast";
-import {
-  notify,
+export { ToastProvider, useToast } from "../context/ToastContext";
+export {
+  default,
+  default as notify,
   showSuccess,
   showError,
   showWarning,
@@ -18,22 +19,3 @@ export const toastConfig = {
   position: "top-center",
   gutter: 12,
 };
-
-export const ToastProvider = ({ children }) => (
-  <>
-    {children}
-    <Toaster toastOptions={{ duration: 4000 }} {...toastConfig} />
-  </>
-);
-
-export {
-  notify,
-  showSuccess,
-  showError,
-  showWarning,
-  showInfo,
-  dismissToast,
-  dismissAllToasts,
-};
-
-export default notify;

@@ -489,9 +489,11 @@ import axios from "axios";
 import { apiUrl } from "../config/api";
 import SmartBooking from "./SmartBooking";
 import { useCaregiver } from "../context/CaregiverContext";
+import { useToast } from "../context/ToastContext";
 
 export default function AppointmentForm({ onAdd }) {
   const { activePerson } = useCaregiver();
+  const { addToast } = useToast();
 
   const [formData, setFormData] = useState({
     patientName: "",
@@ -524,7 +526,7 @@ export default function AppointmentForm({ onAdd }) {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        alert("❌ You must be logged in");
+        addToast("You must be logged in", "error");
         return;
       }
 
@@ -561,10 +563,11 @@ export default function AppointmentForm({ onAdd }) {
 
       if (onAdd) onAdd(response.data);
 
-      alert(
-        `✅ Appointment booked for ${
+      addToast(
+        `Appointment booked for ${
           activePerson.type === "self" ? "yourself" : activePerson.name
-        }`
+        }`,
+        "success"
       );
 
       // Reset form
@@ -579,7 +582,7 @@ export default function AppointmentForm({ onAdd }) {
       });
     } catch (err) {
       console.error("Create appointment failed:", err);
-      alert(err.response?.data?.error || "❌ Failed to book appointment");
+      addToast(err.response?.data?.error || "Failed to book appointment", "error");
     }
   };
 

@@ -3,12 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { User, Mail, Lock, UserPlus, ArrowRight } from "lucide-react";
 import { registerUser } from "../api/auth";
+import { useToast } from "../context/ToastContext";
 import Card from "../ui/Card";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
 
 function Register() {
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -43,6 +45,7 @@ function Register() {
       if (!res.success) {
         return setError(res.message || "Registration failed.");
       }
+      addToast("Registration successful! Please log in.", "success");
       navigate("/login");
     } catch (err) {
       console.error("REGISTER ERROR:", err);

@@ -81,15 +81,20 @@ const PremiumToast = ({ t, message, type }) => {
 
 const notify = (message, type = "info", options = {}) => {
   const resolvedType = VARIANTS[type] ? type : "info";
-  const toastId = options.id ?? `${resolvedType}::${message}`;
+
+  const toastOptions = {
+    duration: options.duration ?? TOAST_DURATION,
+    position: options.position,
+  };
+
+  // Only dedupe when caller passes an explicit id (avoids "stuck" repeat messages).
+  if (options.id !== undefined) {
+    toastOptions.id = options.id;
+  }
 
   return toast.custom(
     (t) => <PremiumToast t={t} message={message} type={resolvedType} />,
-    {
-      duration: options.duration ?? TOAST_DURATION,
-      id: toastId,
-      position: options.position,
-    }
+    toastOptions
   );
 };
 

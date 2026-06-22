@@ -1,6 +1,7 @@
 // PatientManagement.jsx
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/api';
+import { useToast } from '../context/ToastContext';
 import './PatientManagement.css';
 
 const API_BASE = API_BASE_URL;
@@ -282,6 +283,7 @@ const PatientCard = ({ patient, onViewDetails, onViewMedicalHistory }) => {
 
 // Add Patient Modal Component
 const AddPatientModal = ({ onClose, onSuccess }) => {
+  const { addToast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -312,11 +314,11 @@ const AddPatientModal = ({ onClose, onSuccess }) => {
       if (result.success) {
         onSuccess();
       } else {
-        alert(result.message || 'Failed to add patient');
+        addToast(result.message || 'Failed to add patient', 'error');
       }
     } catch (error) {
       console.error('Error adding patient:', error);
-      alert('Failed to add patient');
+      addToast('Failed to add patient', 'error');
     } finally {
       setLoading(false);
     }
@@ -679,6 +681,7 @@ const MedicalHistoryModal = ({ patient, onClose }) => {
 
 // Add Medical Record Modal Component
 const AddMedicalRecordModal = ({ patient, onClose, onSuccess }) => {
+  const { addToast } = useToast();
   const [formData, setFormData] = useState({
     visit_date: '',
     record_type: '',
@@ -705,11 +708,11 @@ const AddMedicalRecordModal = ({ patient, onClose, onSuccess }) => {
       if (result.success) {
         onSuccess();
       } else {
-        alert(result.message || 'Failed to add medical record');
+        addToast(result.message || 'Failed to add medical record', 'error');
       }
     } catch (error) {
       console.error('Error adding medical record:', error);
-      alert('Failed to add medical record');
+      addToast('Failed to add medical record', 'error');
     } finally {
       setLoading(false);
     }

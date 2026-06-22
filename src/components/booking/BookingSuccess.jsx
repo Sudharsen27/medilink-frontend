@@ -2,8 +2,16 @@ import React from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, Calendar, Clock, Stethoscope } from "lucide-react";
 import Button from "../../ui/Button";
+import MeetLinkButton from "../MeetLinkButton";
 
-const BookingSuccess = ({ doctor, date, time, onViewAppointments, onBookAnother }) => (
+const BookingSuccess = ({
+  doctor,
+  date,
+  time,
+  meetLink,
+  onViewAppointments,
+  onBookAnother,
+}) => (
   <motion.div
     initial={{ opacity: 0, scale: 0.95 }}
     animate={{ opacity: 1, scale: 1 }}
@@ -58,6 +66,16 @@ const BookingSuccess = ({ doctor, date, time, onViewAppointments, onBookAnother 
         </div>
       </div>
     </div>
+
+    {meetLink ? (
+      <div className="mb-8 flex justify-center">
+        <MeetLinkButton meetLink={meetLink} size="md" label="Join Google Meet" />
+      </div>
+    ) : (
+      <p className="text-xs text-slate-400 mb-8 max-w-sm mx-auto">
+        A Google Meet link will appear here once your video visit is confirmed.
+      </p>
+    )}
 
     <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
       <Button className="flex-1" onClick={onViewAppointments}>
