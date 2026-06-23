@@ -416,7 +416,8 @@ import React, { useState } from "react";
 import {
   deleteAppointment,
   updateAppointmentStatus,
-  updateAppointment, // ✅ RESCHEDULE API
+  updateAppointment,
+  cancelAppointment,
 } from "../api/appointments";
 import { useToast } from "../context/ToastContext";
 
@@ -432,9 +433,16 @@ const STATUS_CLASSES = {
   cancelled: "bg-red-100 text-red-700",
 };
 
-export default function AppointmentList({ appointments, onUpdate }) {
+export default function AppointmentList({ appointments, onUpdate, user }) {
   const { addToast } = useToast();
   const [loadingId, setLoadingId] = useState(null);
+  const isAdmin = user?.role === "admin";
+
+  const canModifyStatus = (status) =>
+    isAdmin && !["cancelled", "completed"].includes(status);
+
+  const canCancel = (status) =>
+    !isAdmin && !["cancelled", "completed"].includes(status);
 
   // 🔁 Reschedule state
   const [showReschedule, setShowReschedule] = useState(false);
@@ -444,6 +452,10 @@ export default function AppointmentList({ appointments, onUpdate }) {
 
   // 🗑️ DELETE
   const handleDelete = async (id) => {
+    if (!isAdmin) {
+      addToast("Only admins can delete appointments", "warning");
+      return;
+    }
     if (!window.confirm("Delete this appointment?")) return;
 
     try {
@@ -458,15 +470,35 @@ export default function AppointmentList({ appointments, onUpdate }) {
     }
   };
 
-  // 🔄 STATUS CHANGE
+  // 🔄 STATUS CHANGE (admin only)
   const handleStatusChange = async (id, status) => {
+    if (!isAdmin) {
+      addToast("Only admins can change appointment status", "warning");
+      return;
+    }
     try {
       setLoadingId(id);
       await updateAppointmentStatus(id, status);
       onUpdate();
+      addToast("Status updated", "success");
     } catch (err) {
       console.error("Status update failed", err);
-      addToast("Failed to update status", "error");
+      addToast(err.message || "Failed to update status", "error");
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleCancel = async (id) => {
+    if (!window.confirm("Cancel this appointment?")) return;
+    try {
+      setLoadingId(id);
+      await cancelAppointment(id);
+      onUpdate();
+      addToast("Appointment cancelled", "success");
+    } catch (err) {
+      console.error("Cancel failed", err);
+      addToast(err.message || "Failed to cancel appointment", "error");
     } finally {
       setLoadingId(null);
     }
@@ -542,43 +574,59 @@ export default function AppointmentList({ appointments, onUpdate }) {
             {new Date(app.date).toLocaleDateString()}
           </div>
 
-          {/* STATUS DROPDOWN */}
+          {/* STATUS */}
           <div>
-            <select
-              disabled={loadingId === app.id}
-              value={app.status}
-              onChange={(e) =>
-                handleStatusChange(app.id, e.target.value)
-              }
-              className={`text-xs px-2 py-1 rounded border cursor-pointer ${
-                STATUS_CLASSES[app.status] || "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-              }`}
-            >
-              <option value="scheduled">Scheduled</option>
-              <option value="pending">Pending</option>
-              <option value="reschedule_requested">
-                Reschedule Requested
-              </option>
-              <option value="confirmed">Confirmed</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
+            {isAdmin ? (
+              <select
+                disabled={loadingId === app.id || !canModifyStatus(app.status)}
+                value={app.status}
+                onChange={(e) => handleStatusChange(app.id, e.target.value)}
+                className={`text-xs px-2 py-1 rounded border cursor-pointer ${
+                  STATUS_CLASSES[app.status] || "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                }`}
+              >
+                <option value="scheduled">Scheduled</option>
+                <option value="pending">Pending</option>
+                <option value="reschedule_requested">Reschedule Requested</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            ) : (
+              <span
+                className={`inline-block text-xs px-2 py-1 rounded capitalize ${
+                  STATUS_CLASSES[app.status] || "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                }`}
+              >
+                {app.status?.replace(/_/g, " ") || "pending"}
+              </span>
+            )}
           </div>
 
           {/* ACTION BUTTONS */}
-          <div className="col-span-2 flex gap-2 justify-center">
-            <button
-              disabled={loadingId === app.id}
-              onClick={() =>
-                handleStatusChange(app.id, "confirmed")
-              }
-              className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-            >
-              Confirm
-            </button>
+          <div className="col-span-2 flex gap-2 justify-center flex-wrap">
+            {isAdmin && canModifyStatus(app.status) && (
+              <button
+                disabled={loadingId === app.id}
+                onClick={() => handleStatusChange(app.id, "confirmed")}
+                className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+              >
+                Confirm
+              </button>
+            )}
+
+            {!isAdmin && canCancel(app.status) && (
+              <button
+                disabled={loadingId === app.id}
+                onClick={() => handleCancel(app.id)}
+                className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            )}
 
             <button
-              disabled={loadingId === app.id}
+              disabled={loadingId === app.id || app.status === "cancelled"}
               onClick={() => {
                 setSelectedApp(app);
                 setNewDate(app.date.split("T")[0]);
@@ -590,13 +638,15 @@ export default function AppointmentList({ appointments, onUpdate }) {
               Reschedule
             </button>
 
-            <button
-              disabled={loadingId === app.id}
-              onClick={() => handleDelete(app.id)}
-              className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-            >
-              Delete
-            </button>
+            {isAdmin && (
+              <button
+                disabled={loadingId === app.id}
+                onClick={() => handleDelete(app.id)}
+                className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+              >
+                Delete
+              </button>
+            )}
           </div>
         </div>
       ))}

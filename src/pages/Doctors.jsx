@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   SlidersHorizontal,
@@ -72,9 +73,10 @@ const SpecialtyChip = ({ label, active, onClick }) => (
 );
 
 const Doctors = () => {
+  const [searchParams] = useSearchParams();
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get("search") || "");
   const [specialty, setSpecialty] = useState("all");
   const [minExperience, setMinExperience] = useState("all");
   const [minRating, setMinRating] = useState("all");

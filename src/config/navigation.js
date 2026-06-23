@@ -52,15 +52,23 @@ export const accountNavItems = [
   { to: "/notifications", label: "Notifications", icon: Bell, badgeKey: "notifications" },
 ];
 
-export const moreNavItems = [
-  { to: "/patient-profile", label: "Patient Profile", icon: UserCircle },
-  { to: "/patients", label: "Patients", icon: Users },
-  { to: "/caregivers", label: "Caregivers", icon: HeartHandshake },
-  { to: "/profile", label: "Settings", icon: Settings },
-];
+export const moreNavItems = (user) => {
+  const isStaff = user?.role === "doctor" || user?.role === "admin";
+  return [
+    { to: "/patient-profile", label: "Patient Profile", icon: UserCircle },
+    ...(isStaff
+      ? [{ to: "/patients", label: "Patients", icon: Users }]
+      : []),
+    { to: "/caregivers", label: "Caregivers", icon: HeartHandshake },
+    { to: "/profile", label: "Settings", icon: Settings },
+  ];
+};
 
 /** More sheet sections for mobile overflow menu */
-export const moreSheetSections = (user) => [
+export const moreSheetSections = (user) => {
+  const isStaff = user?.role === "doctor" || user?.role === "admin";
+
+  return [
   {
     title: "Care",
     items: [
@@ -74,7 +82,9 @@ export const moreSheetSections = (user) => [
     title: "Records & family",
     items: [
       { to: "/patient-profile", label: "Patient Profile", icon: UserCircle, description: "Health profile" },
-      { to: "/patients", label: "Patients", icon: Users, description: "Manage patients" },
+      ...(isStaff
+        ? [{ to: "/patients", label: "Patients", icon: Users, description: "Manage patients" }]
+        : []),
       { to: "/caregivers", label: "Caregivers", icon: HeartHandshake, description: "Family & caregivers" },
     ],
   },
@@ -94,7 +104,8 @@ export const moreSheetSections = (user) => [
         ],
       }]
     : []),
-];
+  ];
+};
 
 /** Routes where mobile chrome (bottom nav, FAB) should hide */
 export const hideMobileChromePatterns = [

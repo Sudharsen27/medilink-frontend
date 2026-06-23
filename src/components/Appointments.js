@@ -89,6 +89,10 @@ const Appointments = ({ user }) => {
 
   // ✅ Update appointment status
   const handleStatusUpdate = async (appointmentId, newStatus) => {
+    if (user?.role !== 'admin') {
+      addToast('Only admins can change appointment status', 'warning');
+      return;
+    }
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(apiUrl(`/api/appointments/${appointmentId}/status`), {
@@ -116,10 +120,41 @@ const Appointments = ({ user }) => {
     }
   };
 
-  // ✅ Cancel appointment
-  const cancelAppointment = (appointmentId) => {
-    if (window.confirm('Are you sure you want to cancel this appointment?')) {
-      handleStatusUpdate(appointmentId, 'cancelled');
+  const cancelAppointment = async (appointmentId) => {
+    if (!window.confirm('Are you sure you want to cancel this appointment?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const isAdmin = user?.role === 'admin';
+      const res = await fetch(
+        apiUrl(
+          isAdmin
+            ? `/api/appointments/${appointmentId}/status`
+            : `/api/appointments/${appointmentId}/cancel`
+        ),
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            ...(isAdmin ? { 'Content-Type': 'application/json' } : {}),
+          },
+          ...(isAdmin ? { body: JSON.stringify({ status: 'cancelled' }) } : {}),
+        }
+      );
+
+      if (!res.ok) throw new Error('Failed to cancel appointment');
+
+      setAppointments(prev =>
+        prev.map(apt =>
+          getId(apt).toString() === appointmentId.toString()
+            ? { ...apt, status: 'cancelled' }
+            : apt
+        )
+      );
+      addToast('Appointment cancelled', 'success');
+    } catch (err) {
+      console.error('Cancel error:', err);
+      addToast('Failed to cancel appointment', 'error');
     }
   };
 

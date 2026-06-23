@@ -287,6 +287,7 @@ import BookAppointment from "./pages/BookAppointment";
 
 /* ===================== ADMIN ===================== */
 import AdminRoute from "./components/AdminRoute";
+import StaffRoute from "./components/StaffRoute";
 import AdminLayout from "./admin/AdminLayout";
 import AdminDashboard from "./admin/AdminDashboard";
 import AdminDoctors from "./admin/AdminDoctors";
@@ -396,7 +397,7 @@ function App() {
           <Route path="/doctors/:id" element={<DoctorProfile />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/caregivers" element={<Caregivers />} />
-          <Route path="/patients" element={<PatientManagement />} />
+          <Route path="/patients" element={<StaffRoute user={user}><PatientManagement /></StaffRoute>} />
           <Route path="/emergency" element={<EmergencyDashboard />} />
         </Route>
 

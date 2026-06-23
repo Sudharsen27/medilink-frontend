@@ -334,6 +334,7 @@ const Dashboard = ({ user }) => {
                 <AppointmentList
                   appointments={filteredAppointments}
                   onUpdate={loadAppointments}
+                  user={user}
                   searchTerm={searchTerm}
                   loading={loading}
                 />

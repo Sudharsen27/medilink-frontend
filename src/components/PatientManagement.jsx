@@ -1,7 +1,20 @@
 // PatientManagement.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import {
+  Users,
+  CalendarCheck,
+  UserPlus,
+  Phone,
+  Mail,
+  Plus,
+} from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import { useToast } from '../context/ToastContext';
+import PageContainer from '../ui/PageContainer';
+import Card from '../ui/Card';
+import Button from '../ui/Button';
+import SearchInput from '../ui/SearchInput';
+import EmptyState from '../ui/EmptyState';
 import './PatientManagement.css';
 
 const API_BASE = API_BASE_URL;
@@ -14,6 +27,74 @@ const getAuthHeaders = () => {
   };
 };
 
+const getPatientName = (patient) => {
+  const fromParts = [patient.first_name, patient.last_name].filter(Boolean).join(' ').trim();
+  return fromParts || patient.name || 'Unknown patient';
+};
+
+const getPatientInitial = (patient) => getPatientName(patient).charAt(0).toUpperCase();
+
+const getPatientAge = (patient) => {
+  if (patient.age != null && patient.age !== '') return `${patient.age} yrs`;
+  const dob = patient.date_of_birth || patient.dob;
+  if (!dob) return null;
+  const birth = new Date(dob);
+  if (Number.isNaN(birth.getTime())) return null;
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age--;
+  return `${age} yrs`;
+};
+
+const matchesPatientSearch = (patient, term) => {
+  if (!term) return true;
+  const q = term.toLowerCase();
+  return (
+    getPatientName(patient).toLowerCase().includes(q) ||
+    patient.email?.toLowerCase().includes(q) ||
+    patient.phone?.includes(term)
+  );
+};
+
+const StatCard = ({ icon: Icon, label, value, accent }) => {
+  const accents = {
+    violet: 'from-violet-500/15 via-violet-500/5 to-transparent border-violet-200/50 dark:border-violet-800/40',
+    blue: 'from-blue-500/15 via-blue-500/5 to-transparent border-blue-200/50 dark:border-blue-800/40',
+    health: 'from-health-500/15 via-health-500/5 to-transparent border-health-200/50 dark:border-health-800/40',
+  };
+  const iconColors = {
+    violet: 'bg-clinical-violet text-white',
+    blue: 'bg-clinical-blue text-white',
+    health: 'bg-health-600 text-white',
+  };
+
+  return (
+    <div className={`rounded-2xl border bg-gradient-to-br p-5 ${accents[accent]}`}>
+      <div className={`w-11 h-11 rounded-xl flex items-center justify-center shadow-soft ${iconColors[accent]}`}>
+        <Icon className="w-5 h-5" aria-hidden="true" />
+      </div>
+      <p className="mt-4 text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white">{value}</p>
+      <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">{label}</p>
+    </div>
+  );
+};
+
+const FilterTab = ({ label, active, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+      active
+        ? 'bg-health-600 text-white shadow-soft'
+        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-health-300 dark:hover:border-health-700'
+    }`}
+    aria-pressed={active}
+  >
+    {label}
+  </button>
+);
+
 const PatientManagement = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,14 +104,13 @@ const PatientManagement = () => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [showMedicalHistory, setShowMedicalHistory] = useState(false);
 
-  // Fetch patients data
-  const fetchPatients = async () => {
+  const fetchPatients = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE}/api/patients`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
-      
+
       const result = await response.json();
       if (result.success) {
         setPatients(result.data);
@@ -40,136 +120,132 @@ const PatientManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchPatients();
+  }, [fetchPatients]);
+
+  const thirtyDaysAgo = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d;
   }, []);
 
-  // Filter patients based on active tab and search term
-  const filteredPatients = patients.filter(patient => {
-    const matchesSearch = 
-      patient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.phone?.includes(searchTerm);
-    
-    if (activeTab === 'all') return matchesSearch;
-    if (activeTab === 'recent') {
-      const lastVisit = patient.last_visit ? new Date(patient.last_visit) : null;
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return matchesSearch && lastVisit && lastVisit > thirtyDaysAgo;
-    }
-    return matchesSearch;
-  });
+  const activeCount = useMemo(
+    () =>
+      patients.filter((p) => {
+        const lastVisit = p.last_visit ? new Date(p.last_visit) : null;
+        return lastVisit && lastVisit > thirtyDaysAgo;
+      }).length,
+    [patients, thirtyDaysAgo]
+  );
+
+  const newThisMonth = useMemo(
+    () =>
+      patients.filter((p) => {
+        const created = p.created_at ? new Date(p.created_at) : null;
+        return created && created > thirtyDaysAgo;
+      }).length,
+    [patients, thirtyDaysAgo]
+  );
+
+  const filteredPatients = useMemo(() => {
+    return patients.filter((patient) => {
+      if (!matchesPatientSearch(patient, searchTerm)) return false;
+      if (activeTab === 'recent') {
+        const lastVisit = patient.last_visit ? new Date(patient.last_visit) : null;
+        return lastVisit && lastVisit > thirtyDaysAgo;
+      }
+      return true;
+    });
+  }, [patients, searchTerm, activeTab, thirtyDaysAgo]);
 
   if (loading) {
     return (
-      <div className="patient-management-container">
-        <div className="loading-spinner">Loading patients...</div>
-      </div>
+      <PageContainer className="pb-12">
+        <div className="animate-pulse space-y-6">
+          <div className="h-10 w-64 bg-slate-200 dark:bg-slate-700 rounded-xl" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-32 bg-slate-200 dark:bg-slate-700 rounded-2xl" />
+            ))}
+          </div>
+          <div className="h-16 bg-slate-200 dark:bg-slate-700 rounded-2xl" />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-56 bg-slate-200 dark:bg-slate-700 rounded-2xl" />
+            ))}
+          </div>
+        </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="patient-management-container">
-      {/* Header */}
-      <div className="patient-header">
-        <div className="header-content">
-          <h1>Patient Management</h1>
-          <p>Manage patient records and medical history</p>
+    <PageContainer className="pb-12">
+      <div className="mb-8 flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-health-600 dark:text-health-400 uppercase tracking-wide mb-1">
+            Staff portal
+          </p>
+          <h1 className="text-3xl lg:text-4xl font-display font-bold text-slate-900 dark:text-white">
+            Patient Management
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-xl">
+            Manage patient records, contact details, and medical history in one place.
+          </p>
         </div>
-        <div className="header-actions">
-          <button 
-            className="btn-primary"
-            onClick={() => setShowAddPatient(true)}
-          >
-            + Add New Patient
-          </button>
-        </div>
+        <Button onClick={() => setShowAddPatient(true)} icon={Plus}>
+          Add New Patient
+        </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="patient-stats">
-        <div className="stat-card">
-          <div className="stat-icon">👥</div>
-          <div className="stat-content">
-            <div className="stat-value">{patients.length}</div>
-            <div className="stat-label">Total Patients</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">📅</div>
-          <div className="stat-content">
-            <div className="stat-value">
-              {patients.filter(p => {
-                const lastVisit = p.last_visit ? new Date(p.last_visit) : null;
-                const thirtyDaysAgo = new Date();
-                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                return lastVisit && lastVisit > thirtyDaysAgo;
-              }).length}
-            </div>
-            <div className="stat-label">Active (30 days)</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">🆕</div>
-          <div className="stat-content">
-            <div className="stat-value">
-              {patients.filter(p => {
-                const created = p.created_at ? new Date(p.created_at) : null;
-                const thirtyDaysAgo = new Date();
-                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                return created && created > thirtyDaysAgo;
-              }).length}
-            </div>
-            <div className="stat-label">New This Month</div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <StatCard icon={Users} label="Total Patients" value={patients.length} accent="violet" />
+        <StatCard icon={CalendarCheck} label="Active (30 days)" value={activeCount} accent="blue" />
+        <StatCard icon={UserPlus} label="New This Month" value={newThisMonth} accent="health" />
       </div>
 
-      {/* Controls */}
-      <div className="patient-controls">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search patients by name, email, or phone..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+      <Card glass padding="md" className="mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+          <SearchInput
+            placeholder="Search by name, email, or phone..."
+            onSearch={setSearchTerm}
+            className="flex-1 w-full"
           />
-        </div>
-        <div className="filter-tabs">
-          <button
-            className={`tab-btn ${activeTab === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveTab('all')}
-          >
-            All Patients
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'recent' ? 'active' : ''}`}
-            onClick={() => setActiveTab('recent')}
-          >
-            Recent Visits
-          </button>
-        </div>
-      </div>
-
-      {/* Patients Grid */}
-      <div className="patients-grid">
-        {filteredPatients.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">👥</div>
-            <h3>No patients found</h3>
-            <p>{searchTerm ? 'Try adjusting your search terms' : 'Get started by adding your first patient'}</p>
-            <button 
-              className="btn-primary"
-              onClick={() => setShowAddPatient(true)}
-            >
-              + Add First Patient
-            </button>
+          <div className="flex flex-wrap gap-2 shrink-0">
+            <FilterTab
+              label="All Patients"
+              active={activeTab === 'all'}
+              onClick={() => setActiveTab('all')}
+            />
+            <FilterTab
+              label="Recent Visits"
+              active={activeTab === 'recent'}
+              onClick={() => setActiveTab('recent')}
+            />
           </div>
-        ) : (
-          filteredPatients.map(patient => (
+        </div>
+      </Card>
+
+      {filteredPatients.length === 0 ? (
+        <Card padding="lg">
+          <EmptyState
+            icon={Users}
+            title="No patients found"
+            description={
+              searchTerm || activeTab === 'recent'
+                ? 'Try adjusting your search or filter criteria.'
+                : 'Get started by adding your first patient.'
+            }
+            actionLabel={searchTerm || activeTab === 'recent' ? undefined : 'Add First Patient'}
+            onAction={searchTerm || activeTab === 'recent' ? undefined : () => setShowAddPatient(true)}
+          />
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filteredPatients.map((patient) => (
             <PatientCard
               key={patient.id}
               patient={patient}
@@ -179,9 +255,9 @@ const PatientManagement = () => {
                 setShowMedicalHistory(true);
               }}
             />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Modals */}
       {showAddPatient && (
@@ -216,68 +292,63 @@ const PatientManagement = () => {
           }}
         />
       )}
-    </div>
+    </PageContainer>
   );
 };
 
-// Patient Card Component
 const PatientCard = ({ patient, onViewDetails, onViewMedicalHistory }) => {
+  const name = getPatientName(patient);
+  const age = getPatientAge(patient);
+
   return (
-    <div className="patient-card">
-      <div className="patient-card-header">
-        <div className="patient-avatar">
-          {patient.name ? patient.name.charAt(0).toUpperCase() : 'P'}
+    <Card padding="md" hover className="flex flex-col h-full">
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 rounded-xl bg-health-600 text-white flex items-center justify-center text-lg font-bold shrink-0">
+          {getPatientInitial(patient)}
         </div>
-        <div className="patient-basic-info">
-          <h3 className="patient-name">{patient.name || 'Unnamed Patient'}</h3>
-          <p className="patient-age-gender">
-            {patient.age ? `${patient.age} yrs` : 'Age not set'} • {patient.gender || 'Not specified'}
+        <div className="min-w-0 flex-1">
+          <h3 className="font-semibold text-slate-900 dark:text-white truncate">{name}</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {age || 'Age not set'} · {patient.gender || 'Not specified'}
           </p>
         </div>
       </div>
 
-      <div className="patient-contact-info">
-        <div className="contact-item">
-          <span className="icon">📞</span>
-          <span>{patient.phone || 'No phone'}</span>
+      <div className="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+        <div className="flex items-center gap-2 min-w-0">
+          <Phone className="w-4 h-4 text-slate-400 shrink-0" aria-hidden="true" />
+          <span className="truncate">{patient.phone || 'No phone'}</span>
         </div>
-        <div className="contact-item">
-          <span className="icon">📧</span>
-          <span>{patient.email || 'No email'}</span>
-        </div>
-      </div>
-
-      <div className="patient-meta">
-        <div className="meta-item">
-          <span className="label">Last Visit:</span>
-          <span className="value">
-            {patient.last_visit 
-              ? new Date(patient.last_visit).toLocaleDateString() 
-              : 'Never'
-            }
-          </span>
-        </div>
-        <div className="meta-item">
-          <span className="label">Blood Type:</span>
-          <span className="value">{patient.blood_type || 'Not set'}</span>
+        <div className="flex items-center gap-2 min-w-0">
+          <Mail className="w-4 h-4 text-slate-400 shrink-0" aria-hidden="true" />
+          <span className="truncate">{patient.email || 'No email'}</span>
         </div>
       </div>
 
-      <div className="patient-card-actions">
-        <button 
-          className="btn-outline"
-          onClick={onViewDetails}
-        >
+      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/60 grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <p className="text-xs text-slate-400 uppercase tracking-wide">Last visit</p>
+          <p className="font-medium text-slate-700 dark:text-slate-200">
+            {patient.last_visit ? new Date(patient.last_visit).toLocaleDateString() : 'Never'}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-slate-400 uppercase tracking-wide">Blood type</p>
+          <p className="font-medium text-slate-700 dark:text-slate-200">
+            {patient.blood_type || 'Not set'}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-col sm:flex-row gap-2 mt-auto pt-2">
+        <Button variant="outline" size="sm" className="flex-1" onClick={onViewDetails}>
           View Details
-        </button>
-        <button 
-          className="btn-primary"
-          onClick={onViewMedicalHistory}
-        >
+        </Button>
+        <Button size="sm" className="flex-1" onClick={onViewMedicalHistory}>
           Medical History
-        </button>
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 };
 
@@ -285,7 +356,8 @@ const PatientCard = ({ patient, onViewDetails, onViewMedicalHistory }) => {
 const AddPatientModal = ({ onClose, onSuccess }) => {
   const { addToast } = useToast();
   const [formData, setFormData] = useState({
-    name: '',
+    first_name: '',
+    last_name: '',
     email: '',
     phone: '',
     date_of_birth: '',
@@ -342,13 +414,23 @@ const AddPatientModal = ({ onClose, onSuccess }) => {
         <form onSubmit={handleSubmit} className="patient-form">
           <div className="form-grid">
             <div className="form-group">
-              <label>Full Name *</label>
+              <label>First Name *</label>
               <input
                 type="text"
-                name="name"
-                value={formData.name}
+                name="first_name"
+                value={formData.first_name}
                 onChange={handleChange}
                 required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Last Name</label>
+              <input
+                type="text"
+                name="last_name"
+                value={formData.last_name}
+                onChange={handleChange}
               />
             </div>
 
@@ -477,6 +559,9 @@ const AddPatientModal = ({ onClose, onSuccess }) => {
 
 // Patient Details Modal Component
 const PatientDetailsModal = ({ patient, onClose, onEdit, onViewMedicalHistory }) => {
+  const name = getPatientName(patient);
+  const age = getPatientAge(patient);
+
   return (
     <div className="modal-overlay">
       <div className="modal-content large">
@@ -491,11 +576,11 @@ const PatientDetailsModal = ({ patient, onClose, onEdit, onViewMedicalHistory })
             <div className="details-grid">
               <div className="detail-item">
                 <span className="label">Full Name:</span>
-                <span className="value">{patient.name}</span>
+                <span className="value">{name}</span>
               </div>
               <div className="detail-item">
                 <span className="label">Age:</span>
-                <span className="value">{patient.age ? `${patient.age} years` : 'Not specified'}</span>
+                <span className="value">{age || 'Not specified'}</span>
               </div>
               <div className="detail-item">
                 <span className="label">Gender:</span>
@@ -586,30 +671,29 @@ const MedicalHistoryModal = ({ patient, onClose }) => {
   const [medicalHistory, setMedicalHistory] = useState([]);
   const [showAddRecord, setShowAddRecord] = useState(false);
 
-  useEffect(() => {
-    // Fetch medical history for this patient
-    const fetchMedicalHistory = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/api/patients/${patient.id}/medical-history`, {
-          headers: getAuthHeaders(),
-        });
-        const result = await response.json();
-        if (result.success) {
-          setMedicalHistory(result.data);
-        }
-      } catch (error) {
-        console.error('Error fetching medical history:', error);
+  const fetchMedicalHistory = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/patients/${patient.id}/medical-history`, {
+        headers: getAuthHeaders(),
+      });
+      const result = await response.json();
+      if (result.success) {
+        setMedicalHistory(result.data);
       }
-    };
-
-    fetchMedicalHistory();
+    } catch (error) {
+      console.error('Error fetching medical history:', error);
+    }
   }, [patient.id]);
+
+  useEffect(() => {
+    fetchMedicalHistory();
+  }, [fetchMedicalHistory]);
 
   return (
     <div className="modal-overlay">
       <div className="modal-content x-large">
         <div className="modal-header">
-          <h2>Medical History - {patient.name}</h2>
+          <h2>Medical History — {getPatientName(patient)}</h2>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
@@ -664,7 +748,7 @@ const MedicalHistoryModal = ({ patient, onClose }) => {
             onClose={() => setShowAddRecord(false)}
             onSuccess={() => {
               setShowAddRecord(false);
-              setMedicalHistory();
+              fetchMedicalHistory();
             }}
           />
         )}

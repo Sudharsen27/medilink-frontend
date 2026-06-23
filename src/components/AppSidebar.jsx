@@ -485,7 +485,7 @@ const SidebarContent = ({
         ))}
         <MoreMenu
           collapsed={collapsed}
-          items={moreNavItems}
+          items={moreNavItems(user)}
           onNavigate={onNavigate}
           user={user}
         />

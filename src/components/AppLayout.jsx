@@ -9,6 +9,7 @@ import MobileHeader from "./mobile/MobileHeader";
 import { useEnhancedNotifications } from "../context/EnhancedNotificationsContext";
 import { useFavorites } from "../context/FavoritesContext";
 import { shouldHideMobileChrome } from "../config/navigation";
+import AiAssistant from "./ai/AiAssistant";
 
 const STORAGE_KEY = "medilink-sidebar-collapsed";
 
@@ -70,6 +71,7 @@ const AppLayout = ({ user, onLogout }) => {
 
         {!hideChrome && (
           <>
+            <AiAssistant user={user} />
             <FloatingActionButton />
             <BottomNav
               onMorePress={() => setMoreOpen(true)}
