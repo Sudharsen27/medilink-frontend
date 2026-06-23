@@ -433,6 +433,23 @@ const STATUS_CLASSES = {
   cancelled: "bg-red-100 text-red-700",
 };
 
+const formatDateForInput = (value) => {
+  if (!value) return "";
+  return String(value).split("T")[0];
+};
+
+const formatTimeForInput = (value) => {
+  if (!value) return "";
+  const raw = String(value);
+  return raw.length >= 5 ? raw.slice(0, 5) : raw;
+};
+
+const getErrorMessage = (err) =>
+  err?.response?.data?.error ||
+  err?.response?.data?.message ||
+  err?.message ||
+  "Something went wrong";
+
 export default function AppointmentList({ appointments, onUpdate, user }) {
   const { addToast } = useToast();
   const [loadingId, setLoadingId] = useState(null);
@@ -449,6 +466,7 @@ export default function AppointmentList({ appointments, onUpdate, user }) {
   const [selectedApp, setSelectedApp] = useState(null);
   const [newDate, setNewDate] = useState("");
   const [newTime, setNewTime] = useState("");
+  const [savingReschedule, setSavingReschedule] = useState(false);
 
   // 🗑️ DELETE
   const handleDelete = async (id) => {
@@ -504,14 +522,31 @@ export default function AppointmentList({ appointments, onUpdate, user }) {
     }
   };
 
+  const openReschedule = (app) => {
+    setSelectedApp(app);
+    setNewDate(formatDateForInput(app.appointment_date || app.date));
+    setNewTime(formatTimeForInput(app.appointment_time || app.time));
+    setShowReschedule(true);
+  };
+
+  const closeReschedule = () => {
+    setShowReschedule(false);
+    setSelectedApp(null);
+    setNewDate("");
+    setNewTime("");
+    setSavingReschedule(false);
+  };
+
   // 🔁 RESCHEDULE
   const handleReschedule = async () => {
+    if (!selectedApp?.id) return;
     if (!newDate || !newTime) {
       addToast("Please select date and time", "warning");
       return;
     }
 
     try {
+      setSavingReschedule(true);
       setLoadingId(selectedApp.id);
 
       await updateAppointment(selectedApp.id, {
@@ -519,13 +554,19 @@ export default function AppointmentList({ appointments, onUpdate, user }) {
         time: newTime,
       });
 
-      setShowReschedule(false);
-      setSelectedApp(null);
-      onUpdate();
+      closeReschedule();
+      await onUpdate();
+      addToast(
+        isAdmin
+          ? "Appointment rescheduled successfully"
+          : "Reschedule request submitted",
+        "success"
+      );
     } catch (err) {
       console.error("Reschedule failed", err);
-      addToast("Failed to reschedule appointment", "error");
+      addToast(getErrorMessage(err) || "Failed to reschedule appointment", "error");
     } finally {
+      setSavingReschedule(false);
       setLoadingId(null);
     }
   };
@@ -627,12 +668,7 @@ export default function AppointmentList({ appointments, onUpdate, user }) {
 
             <button
               disabled={loadingId === app.id || app.status === "cancelled"}
-              onClick={() => {
-                setSelectedApp(app);
-                setNewDate(app.date.split("T")[0]);
-                setNewTime(app.time);
-                setShowReschedule(true);
-              }}
+              onClick={() => openReschedule(app)}
               className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
             >
               Reschedule
@@ -653,18 +689,25 @@ export default function AppointmentList({ appointments, onUpdate, user }) {
 
       {/* 🔁 RESCHEDULE MODAL */}
       {showReschedule && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="health-card rounded-xl p-6 w-96 shadow-2xl dark:shadow-glass-lg-dark">
-            <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="health-card rounded-xl p-6 w-full max-w-md shadow-2xl dark:shadow-glass-lg-dark">
+            <h3 className="text-lg font-semibold mb-1 text-slate-900 dark:text-slate-100">
               Reschedule Appointment
             </h3>
+            {selectedApp && (
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                {selectedApp.name || selectedApp.patient_name || "Patient"} ·{" "}
+                {selectedApp.doctor_name || "Doctor"}
+              </p>
+            )}
 
             <label className="block mb-2 text-sm text-slate-700 dark:text-slate-300">New Date</label>
             <input
               type="date"
               value={newDate}
               onChange={(e) => setNewDate(e.target.value)}
-              className="health-input mb-3"
+              className="health-input mb-3 w-full"
+              disabled={savingReschedule}
             />
 
             <label className="block mb-2 text-sm text-slate-700 dark:text-slate-300">New Time</label>
@@ -672,21 +715,26 @@ export default function AppointmentList({ appointments, onUpdate, user }) {
               type="time"
               value={newTime}
               onChange={(e) => setNewTime(e.target.value)}
-              className="health-input mb-4"
+              className="health-input mb-4 w-full"
+              disabled={savingReschedule}
             />
 
             <div className="flex justify-end gap-2">
               <button
-                onClick={() => setShowReschedule(false)}
-                className="px-3 py-1 text-sm bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg"
+                type="button"
+                onClick={closeReschedule}
+                disabled={savingReschedule}
+                className="px-4 py-2 text-sm bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={handleReschedule}
-                className="px-3 py-1 text-sm bg-health-600 hover:bg-health-700 text-white rounded-lg"
+                disabled={savingReschedule || !newDate || !newTime}
+                className="px-4 py-2 text-sm bg-health-600 hover:bg-health-700 text-white rounded-lg disabled:opacity-50 min-w-[88px]"
               >
-                Save
+                {savingReschedule ? "Saving…" : "Save"}
               </button>
             </div>
           </div>

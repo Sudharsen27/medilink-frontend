@@ -13,6 +13,21 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const message =
+      error.response?.data?.error ||
+      error.response?.data?.message ||
+      error.message ||
+      "Request failed";
+    const enriched = new Error(message);
+    enriched.status = error.response?.status;
+    enriched.response = error.response;
+    return Promise.reject(enriched);
+  }
+);
+
 export const fetchAppointments = async () => {
   const res = await API.get("/");
   return res.data;
